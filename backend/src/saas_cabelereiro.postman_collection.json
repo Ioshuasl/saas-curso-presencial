@@ -1,0 +1,206 @@
+{
+	"info": {
+		"_postman_id": "9a1b2c3d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+		"name": "SaaS Cabelereiro - Completo",
+		"description": "API para gestão de usuários, cursos, sessões e inscrições.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01. Autenticação",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"if (response.token) {",
+									"    pm.collectionVariables.set(\"token\", response.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"identificador\": \"admin_mestre\",\n    \"senha\": \"123456\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/login", "host": ["{{baseUrl}}"], "path": ["login"] }
+					}
+				},
+				{
+					"name": "Meus Dados (Logado)",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/me", "host": ["{{baseUrl}}"], "path": ["me"] }
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "POST",
+						"url": { "raw": "{{baseUrl}}/logout", "host": ["{{baseUrl}}"], "path": ["logout"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "02. Usuários (Público)",
+			"item": [
+				{
+					"name": "Cadastrar Admin",
+					"request": {
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin_mestre\",\n    \"email\": \"admin@teste.com\",\n    \"cpf\": \"11122233344\",\n    \"senha\": \"123456\",\n    \"nome_completo\": \"Gestor Master\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/usuarios/admin", "host": ["{{baseUrl}}"], "path": ["usuarios", "admin"] }
+					}
+				},
+				{
+					"name": "Cadastrar Aluno",
+					"request": {
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"aluno_primeiro\",\n    \"email\": \"aluno@teste.com\",\n    \"cpf\": \"55566677788\",\n    \"senha\": \"123456\",\n    \"nome_completo\": \"João do Corte\",\n    \"telefone\": \"62988887777\",\n    \"cidade\": \"Goiânia\",\n    \"profissao\": \"Barbeiro\",\n    \"biografia\": \"Especialista em degrade\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/usuarios/aluno", "host": ["{{baseUrl}}"], "path": ["usuarios", "aluno"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "03. Usuários (Gestão - Admin Only)",
+			"item": [
+				{
+					"name": "Listar Admins",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/usuarios/admins", "host": ["{{baseUrl}}"], "path": ["usuarios", "admins"] }
+					}
+				},
+				{
+					"name": "Listar Alunos",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/usuarios/alunos", "host": ["{{baseUrl}}"], "path": ["usuarios", "alunos"] }
+					}
+				},
+				{
+					"name": "Excluir Usuário",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/usuarios/1", "host": ["{{baseUrl}}"], "path": ["usuarios", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "04. Cursos (Público)",
+			"item": [
+				{
+					"name": "Listar Todos Cursos",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/cursos", "host": ["{{baseUrl}}"], "path": ["cursos"] }
+					}
+				},
+				{
+					"name": "Detalhes do Curso (ID)",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/cursos/1", "host": ["{{baseUrl}}"], "path": ["cursos", "1"] }
+					}
+				},
+				{
+					"name": "Consultar Vagas",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/cursos/1/vagas", "host": ["{{baseUrl}}"], "path": ["cursos", "1", "vagas"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "05. Cursos (Gestão - Admin Only)",
+			"item": [
+				{
+					"name": "Criar Curso com Sessões",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Workshop de Cortes Modernos\",\n    \"ministrante\": \"Professor Hair\",\n    \"descricao\": \"Aprenda as tendências de 2026\",\n    \"valor\": 250.00,\n    \"vagas\": 20,\n    \"local\": \"Auditório Central\",\n    \"sessoes\": [\n        {\n            \"data\": \"2026-05-10\",\n            \"horario_inicio\": \"08:00:00\",\n            \"horario_fim\": \"12:00:00\"\n        },\n        {\n            \"data\": \"2026-05-11\",\n            \"horario_inicio\": \"08:00:00\",\n            \"horario_fim\": \"12:00:00\"\n        }\n    ]\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/cursos", "host": ["{{baseUrl}}"], "path": ["cursos"] }
+					}
+				},
+				{
+					"name": "Listar Alunos do Curso",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/cursos/1/alunos", "host": ["{{baseUrl}}"], "path": ["cursos", "1", "alunos"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "06. Inscrições (Aluno)",
+			"item": [
+				{
+					"name": "Inscrever-se em Curso",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"curso_id\": 1\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/inscricoes", "host": ["{{baseUrl}}"], "path": ["inscricoes"] }
+					}
+				},
+				{
+					"name": "Minhas Inscrições",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/minhas-inscricoes", "host": ["{{baseUrl}}"], "path": ["minhas-inscricoes"] }
+					}
+				},
+				{
+					"name": "Cancelar Inscrição",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/inscricoes/1", "host": ["{{baseUrl}}"], "path": ["inscricoes", "1"] }
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{ "key": "baseUrl", "value": "http://localhost:3000/api", "type": "string" },
+		{ "key": "token", "value": "", "type": "string" }
+	]
+}
