@@ -1,4 +1,5 @@
-import { Curso, SessaoCurso, Inscricao, sequelize } from '../models/index.js';
+import { Curso, SessaoCurso, Inscricao, Usuario, sequelize } from '../models/index.js';
+import { Op } from 'sequelize';
 
 class CursoService {
   // --- CADASTRAR CURSO ---
@@ -26,11 +27,55 @@ class CursoService {
     }
   }
 
-  // --- LISTAR TODOS ---
-  async findAll() {
-    return await Curso.findAll({
-      order: [['id', 'DESC']]
+  // --- LISTAR COM FILTROS E PAGINAÇÃO ---
+  async findAll(params = {}) {
+    const {
+      page = 1,
+      limit = 10,
+      nome,
+      ministrante,
+      status,
+      sort = 'id',
+      order = 'DESC',
+    } = params;
+
+    const allowedSort = ['id', 'nome', 'ministrante', 'valor', 'vagas', 'local', 'status', 'created_at'];
+    const sortField = allowedSort.includes(sort) ? sort : 'id';
+    const sortOrder = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+    const offset = (pageNum - 1) * limitNum;
+
+    const where = {};
+
+    if (nome != null && String(nome).trim() !== '') {
+      where.nome = { [Op.iLike]: `%${String(nome).trim()}%` };
+    }
+    if (ministrante != null && String(ministrante).trim() !== '') {
+      where.ministrante = { [Op.iLike]: `%${String(ministrante).trim()}%` };
+    }
+    if (status !== undefined && status !== '') {
+      where.status = status === 'true' || status === true;
+    }
+
+    const { count, rows } = await Curso.findAndCountAll({
+      where: Object.keys(where).length ? where : undefined,
+      order: [[sortField, sortOrder]],
+      limit: limitNum,
+      offset,
     });
+
+    const totalPaginas = Math.ceil(count / limitNum) || 1;
+
+    return {
+      data: rows,
+      paginacao: {
+        total: count,
+        total_paginas: totalPaginas,
+        pagina: pageNum,
+        por_pagina: limitNum,
+      },
+    };
   }
 
   // --- LISTAR CURSOS POR DATA DE SESSÃO ---
@@ -107,6 +152,24 @@ class CursoService {
       await t.rollback();
       throw error;
     }
+  }
+
+  // --- CURSOS VINCULADOS AO ALUNO (inscrições do aluno) ---
+  async findCursosByAlunoId(aluno_id) {
+    return await Curso.findAll({
+      include: [
+        { model: SessaoCurso, as: 'sessoes' },
+        {
+          model: Usuario,
+          as: 'alunos_inscritos',
+          where: { id: aluno_id },
+          required: true,
+          attributes: [],
+          through: { attributes: ['data_inscricao'] },
+        },
+      ],
+      order: [['id', 'DESC']],
+    });
   }
 
   async getVagasInfo(cursoId) {

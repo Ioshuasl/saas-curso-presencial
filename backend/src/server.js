@@ -1,6 +1,7 @@
 import express from 'express';
 import sequelize from './config/database.js';
 import routes from './routes/index.js';
+import { swaggerSpec, swaggerUiMiddleware } from './config/swagger.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,6 +9,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use('/api', routes);
+app.use('/api-docs', swaggerUiMiddleware.serve, swaggerUiMiddleware.setup(swaggerSpec));
 
 // Função para iniciar o servidor e o banco
 async function startServer() {

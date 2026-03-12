@@ -12,11 +12,11 @@ class CursoController {
     }
   }
 
-  // --- LISTAR TODOS OS CURSOS ---
+  // --- LISTAR CURSOS (com filtros e paginação) ---
   async index(req, res) {
     try {
-      const cursos = await CursoService.findAll();
-      return res.json(cursos);
+      const resultado = await CursoService.findAll(req.query);
+      return res.json(resultado);
     } catch (e) {
       return res.status(500).json({ error: 'Erro ao buscar cursos' });
     }
@@ -75,6 +75,16 @@ class CursoController {
       return res.json(info);
     } catch (e) {
       return res.status(404).json({ error: e.message });
+    }
+  }
+
+  // --- CURSOS VINCULADOS AO ALUNO LOGADO ---
+  async meusCursos(req, res) {
+    try {
+      const cursos = await CursoService.findCursosByAlunoId(req.userId);
+      return res.json(cursos);
+    } catch (e) {
+      return res.status(500).json({ error: 'Erro ao buscar cursos do aluno' });
     }
   }
 

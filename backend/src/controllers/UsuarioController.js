@@ -20,13 +20,21 @@ class UsuarioController {
   }
 
   async indexAdmin(req, res) {
-    const users = await UsuarioService.findAllAdmins();
-    return res.json(users);
+    try {
+      const resultado = await UsuarioService.findAllAdmins(req.query);
+      return res.json(resultado);
+    } catch (e) {
+      return res.status(500).json({ error: 'Erro ao buscar administradores' });
+    }
   }
 
   async indexAluno(req, res) {
-    const users = await UsuarioService.findAllAlunos();
-    return res.json(users);
+    try {
+      const resultado = await UsuarioService.findAllAlunos(req.query);
+      return res.json(resultado);
+    } catch (e) {
+      return res.status(500).json({ error: 'Erro ao buscar alunos' });
+    }
   }
 
   async showAdmin(req, res) {

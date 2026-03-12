@@ -72,6 +72,22 @@ class InscricaoService {
     await inscricao.destroy();
     return true;
   }
+
+  // --- CONFIRMAR PRESENÇA DO ALUNO EM UM CURSO ---
+  async confirmarPresenca(aluno_id, curso_id) {
+    const inscricao = await Inscricao.findOne({
+      where: { aluno_id, curso_id },
+    });
+
+    if (!inscricao) {
+      throw new Error('Inscrição não encontrada para este aluno neste curso.');
+    }
+
+    inscricao.presenca_confirmada = true;
+    await inscricao.save();
+
+    return inscricao;
+  }
 }
 
 export default new InscricaoService();

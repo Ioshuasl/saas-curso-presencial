@@ -18,7 +18,12 @@ const Inscricao = sequelize.define('Inscricao', {
   data_inscricao: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
-  }
+  },
+  presenca_confirmada: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
 }, {
   tableName: 'inscricoes'
 });

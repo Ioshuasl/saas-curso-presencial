@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "9a1b2c3d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
 		"name": "SaaS Cabelereiro - Completo",
-		"description": "API para gestão de usuários, cursos, sessões e inscrições.",
+		"description": "API para gestão de usuários, cursos, sessões, inscrições, questionários, feedbacks e financeiro (contas a pagar/receber).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -91,7 +91,7 @@
 					"request": {
 						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
 						"method": "GET",
-						"url": { "raw": "{{baseUrl}}/usuarios/admins", "host": ["{{baseUrl}}"], "path": ["usuarios", "admins"] }
+						"url": { "raw": "{{baseUrl}}/usuarios/admins?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["usuarios", "admins"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "nome", "value": "", "disabled": true }, { "key": "status", "value": "", "disabled": true }, { "key": "sort", "value": "id" }, { "key": "order", "value": "DESC" }] }
 					}
 				},
 				{
@@ -99,7 +99,49 @@
 					"request": {
 						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
 						"method": "GET",
-						"url": { "raw": "{{baseUrl}}/usuarios/alunos", "host": ["{{baseUrl}}"], "path": ["usuarios", "alunos"] }
+						"url": { "raw": "{{baseUrl}}/usuarios/alunos?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["usuarios", "alunos"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "nome", "value": "", "disabled": true }, { "key": "cidade", "value": "", "disabled": true }, { "key": "sort", "value": "id" }, { "key": "order", "value": "DESC" }] }
+					}
+				},
+				{
+					"name": "Buscar Admin por ID",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/usuarios/admin/1", "host": ["{{baseUrl}}"], "path": ["usuarios", "admin", "1"] }
+					}
+				},
+				{
+					"name": "Buscar Aluno por ID",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/usuarios/aluno/1", "host": ["{{baseUrl}}"], "path": ["usuarios", "aluno", "1"] }
+					}
+				},
+				{
+					"name": "Atualizar Admin",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "PUT",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome_completo\": \"Gestor Atualizado\",\n    \"email\": \"admin2@teste.com\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/usuarios/admin/1", "host": ["{{baseUrl}}"], "path": ["usuarios", "admin", "1"] }
+					}
+				},
+				{
+					"name": "Atualizar Aluno",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "PUT",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome_completo\": \"João Atualizado\",\n    \"cidade\": \"Anápolis\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/usuarios/aluno/1", "host": ["{{baseUrl}}"], "path": ["usuarios", "aluno", "1"] }
 					}
 				},
 				{
@@ -116,10 +158,17 @@
 			"name": "04. Cursos (Público)",
 			"item": [
 				{
-					"name": "Listar Todos Cursos",
+					"name": "Listar Cursos (com paginação e filtros)",
 					"request": {
 						"method": "GET",
-						"url": { "raw": "{{baseUrl}}/cursos", "host": ["{{baseUrl}}"], "path": ["cursos"] }
+						"url": { "raw": "{{baseUrl}}/cursos?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["cursos"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "nome", "value": "", "disabled": true }, { "key": "status", "value": "true", "disabled": true }, { "key": "sort", "value": "id" }, { "key": "order", "value": "DESC" }] }
+					}
+				},
+				{
+					"name": "Cursos por Data de Sessão",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/cursos/por-data?data=2026-05-10", "host": ["{{baseUrl}}"], "path": ["cursos", "por-data"], "query": [{ "key": "data", "value": "2026-05-10" }] }
 					}
 				},
 				{
@@ -139,7 +188,20 @@
 			]
 		},
 		{
-			"name": "05. Cursos (Gestão - Admin Only)",
+			"name": "05. Cursos (Autenticado)",
+			"item": [
+				{
+					"name": "Meus Cursos (do aluno logado)",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/cursos/meus", "host": ["{{baseUrl}}"], "path": ["cursos", "meus"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "06. Cursos (Admin Only)",
 			"item": [
 				{
 					"name": "Criar Curso com Sessões",
@@ -155,6 +217,27 @@
 					}
 				},
 				{
+					"name": "Atualizar Curso",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "PUT",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Workshop Atualizado\",\n    \"vagas\": 25\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/cursos/1", "host": ["{{baseUrl}}"], "path": ["cursos", "1"] }
+					}
+				},
+				{
+					"name": "Excluir Curso",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/cursos/1", "host": ["{{baseUrl}}"], "path": ["cursos", "1"] }
+					}
+				},
+				{
 					"name": "Listar Alunos do Curso",
 					"request": {
 						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
@@ -165,8 +248,16 @@
 			]
 		},
 		{
-			"name": "06. Inscrições (Aluno)",
+			"name": "07. Inscrições (Autenticado)",
 			"item": [
+				{
+					"name": "Minhas Inscrições",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/minhas-inscricoes", "host": ["{{baseUrl}}"], "path": ["minhas-inscricoes"] }
+					}
+				},
 				{
 					"name": "Inscrever-se em Curso",
 					"request": {
@@ -181,11 +272,16 @@
 					}
 				},
 				{
-					"name": "Minhas Inscrições",
+					"name": "Confirmar Presença",
 					"request": {
 						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
-						"method": "GET",
-						"url": { "raw": "{{baseUrl}}/minhas-inscricoes", "host": ["{{baseUrl}}"], "path": ["minhas-inscricoes"] }
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/inscricoes/1/confirmar-presenca", "host": ["{{baseUrl}}"], "path": ["inscricoes", "1", "confirmar-presenca"] }
 					}
 				},
 				{
@@ -194,6 +290,181 @@
 						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
 						"method": "DELETE",
 						"url": { "raw": "{{baseUrl}}/inscricoes/1", "host": ["{{baseUrl}}"], "path": ["inscricoes", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "08. Questionário Inicial (Autenticado)",
+			"item": [
+				{
+					"name": "Responder Questionário Inicial",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"curso_id\": 1,\n    \"maior_dor_inicio\": \"Falta de técnica para degradê\",\n    \"principal_expectativa\": \"Dominar cortes modernos\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/questionarios-iniciais", "host": ["{{baseUrl}}"], "path": ["questionarios-iniciais"] }
+					}
+				},
+				{
+					"name": "Buscar Questionário Inicial por Curso",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/questionarios-iniciais/1", "host": ["{{baseUrl}}"], "path": ["questionarios-iniciais", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "09. Feedback Final (Autenticado)",
+			"item": [
+				{
+					"name": "Enviar Feedback Final",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"curso_id\": 1,\n    \"objetivo_atingido\": \"Aprendi degradê e fade\",\n    \"resultado_esperado\": \"Atender mais clientes\",\n    \"avaliacao\": 5\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/feedbacks-finais", "host": ["{{baseUrl}}"], "path": ["feedbacks-finais"] }
+					}
+				},
+				{
+					"name": "Buscar Feedback Final por Curso",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/feedbacks-finais/1", "host": ["{{baseUrl}}"], "path": ["feedbacks-finais", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "10. Contas a Pagar (Admin Only)",
+			"item": [
+				{
+					"name": "Listar Contas a Pagar",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/contas-pagar?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["contas-pagar"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "descricao", "value": "", "disabled": true }, { "key": "categoria", "value": "", "disabled": true }, { "key": "status", "value": "PENDENTE", "disabled": true }, { "key": "sort", "value": "data_vencimento" }, { "key": "order", "value": "ASC" }] }
+					}
+				},
+				{
+					"name": "Buscar Conta a Pagar por ID",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/contas-pagar/1", "host": ["{{baseUrl}}"], "path": ["contas-pagar", "1"] }
+					}
+				},
+				{
+					"name": "Criar Conta a Pagar",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"descricao\": \"Material de consumo\",\n    \"categoria\": \"Material\",\n    \"valor\": 500.00,\n    \"data_vencimento\": \"2026-06-15\",\n    \"status\": \"PENDENTE\",\n    \"curso_id\": 1,\n    \"observacao\": \"Comprar tesouras\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/contas-pagar", "host": ["{{baseUrl}}"], "path": ["contas-pagar"] }
+					}
+				},
+				{
+					"name": "Atualizar Conta a Pagar",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "PUT",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"PAGO\",\n    \"data_pagamento\": \"2026-06-10\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/contas-pagar/1", "host": ["{{baseUrl}}"], "path": ["contas-pagar", "1"] }
+					}
+				},
+				{
+					"name": "Excluir Conta a Pagar",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/contas-pagar/1", "host": ["{{baseUrl}}"], "path": ["contas-pagar", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "11. Contas a Receber (Admin Only)",
+			"item": [
+				{
+					"name": "Listar Contas a Receber",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/contas-receber?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["contas-receber"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "aluno_id", "value": "", "disabled": true }, { "key": "curso_id", "value": "", "disabled": true }, { "key": "forma_pagamento", "value": "PIX", "disabled": true }, { "key": "sort", "value": "id" }, { "key": "order", "value": "DESC" }] }
+					}
+				},
+				{
+					"name": "Buscar Conta a Receber por ID",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/contas-receber/1", "host": ["{{baseUrl}}"], "path": ["contas-receber", "1"] }
+					}
+				},
+				{
+					"name": "Criar Conta a Receber com Parcelas",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"aluno_id\": 1,\n    \"curso_id\": 1,\n    \"forma_pagamento\": \"PIX\",\n    \"valor_total\": 500.00,\n    \"observacao\": \"Matrícula curso X\",\n    \"parcelas\": [\n        { \"numero_parcela\": 1, \"valor\": 250.00, \"data_vencimento\": \"2026-05-01\" },\n        { \"numero_parcela\": 2, \"valor\": 250.00, \"data_vencimento\": \"2026-06-01\" }\n    ]\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/contas-receber", "host": ["{{baseUrl}}"], "path": ["contas-receber"] }
+					}
+				},
+				{
+					"name": "Atualizar Conta a Receber",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "PUT",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"valor_total\": 600.00,\n    \"observacao\": \"Ajuste\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/contas-receber/1", "host": ["{{baseUrl}}"], "path": ["contas-receber", "1"] }
+					}
+				},
+				{
+					"name": "Excluir Conta a Receber",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/contas-receber/1", "host": ["{{baseUrl}}"], "path": ["contas-receber", "1"] }
+					}
+				},
+				{
+					"name": "Marcar Parcela como Paga",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"data_pagamento\": \"2026-05-01\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/contas-receber/1/parcelas/1/pagar", "host": ["{{baseUrl}}"], "path": ["contas-receber", "1", "parcelas", "1", "pagar"] }
 					}
 				}
 			]

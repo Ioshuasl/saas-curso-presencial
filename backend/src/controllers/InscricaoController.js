@@ -51,6 +51,32 @@ class InscricaoController {
       return res.status(400).json({ error: e.message });
     }
   }
+
+  // --- CONFIRMAR PRESENÇA DO ALUNO NO CURSO ---
+  async confirmarPresenca(req, res) {
+    try {
+      const { curso_id } = req.params;
+
+      if (!curso_id) {
+        return res.status(400).json({ error: 'O ID do curso é obrigatório.' });
+      }
+
+      // Se for ADMIN, pode passar aluno_id no corpo, senão usa o próprio userId
+      const aluno_id =
+        req.userRole === 'ADMIN' && req.body.aluno_id
+          ? req.body.aluno_id
+          : req.userId;
+
+      const inscricao = await InscricaoService.confirmarPresenca(
+        aluno_id,
+        curso_id,
+      );
+
+      return res.json(inscricao);
+    } catch (e) {
+      return res.status(400).json({ error: e.message });
+    }
+  }
 }
 
 export default new InscricaoController();
