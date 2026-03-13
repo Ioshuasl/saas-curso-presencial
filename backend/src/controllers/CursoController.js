@@ -5,7 +5,11 @@ class CursoController {
   // --- CRIAR CURSO ---
   async store(req, res) {
     try {
-      const curso = await CursoService.create(req.body);
+      const dados = { ...req.body };
+      if (req.file) {
+        dados.url_imagem = `/api/uploads/${req.file.filename}`;
+      }
+      const curso = await CursoService.create(dados);
       return res.status(201).json(curso);
     } catch (e) {
       return res.status(400).json({ error: e.message });

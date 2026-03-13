@@ -3,7 +3,7 @@ import CursoService from './CursoService.js';
 
 class InscricaoService {
   // --- MATRICULAR ALUNO ---
-  async create(aluno_id, curso_id) {
+  async create(aluno_id, curso_id, transaction = null) {
     // 1. Verifica se o curso existe e tem vagas
     const infoVagas = await CursoService.getVagasInfo(curso_id);
     
@@ -21,11 +21,15 @@ class InscricaoService {
     }
 
     // 3. Cria a inscrição
-    return await Inscricao.create({
-      aluno_id,
-      curso_id,
-      data_inscricao: new Date()
-    });
+    const options = transaction ? { transaction } : undefined;
+    return await Inscricao.create(
+      {
+        aluno_id,
+        curso_id,
+        data_inscricao: new Date(),
+      },
+      options,
+    );
   }
 
   // --- LISTAR ALUNOS DE UM CURSO ---

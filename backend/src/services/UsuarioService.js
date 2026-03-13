@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { Usuario, PerfilAdministrador, PerfilAluno, Inscricao, QuestionarioInicial, FeedbackFinal, sequelize } from '../models/index.js';
 import { gerarHash, compararHash, gerarToken } from '../utils/security.js';
 import { Op } from 'sequelize';
+import InscricaoService from '../services/InscricaoService.js';
 
 class UsuarioService {
 
@@ -45,6 +46,39 @@ class UsuarioService {
         },
         { transaction: t }
       );
+      await t.commit();
+      return usuario;
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
+  // --- CREATE ALUNO + INSCRIÇÃO EM CURSO ---
+  async createAlunoComInscricao(dados, curso_id) {
+    const t = await sequelize.transaction();
+    try {
+      const senha_hash = await gerarHash(dados.senha);
+      const usuario = await Usuario.create(
+        { ...dados, senha_hash, role: 'ALUNO' },
+        { transaction: t },
+      );
+
+      await PerfilAluno.create(
+        {
+          usuario_id: usuario.id,
+          nome_completo: dados.nome_completo,
+          telefone: dados.telefone,
+          cidade: dados.cidade,
+          profissao: dados.profissao,
+          biografia: dados.biografia,
+        },
+        { transaction: t },
+      );
+
+      // Cria a inscrição do aluno no curso dentro da mesma transação
+      await InscricaoService.create(usuario.id, curso_id, t);
+
       await t.commit();
       return usuario;
     } catch (error) {

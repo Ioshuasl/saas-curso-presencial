@@ -12,7 +12,11 @@ class UsuarioController {
 
   async storeAluno(req, res) {
     try {
-      const user = await UsuarioService.createAluno(req.body);
+      const { curso_id, ...dados } = req.body;
+
+      const user = curso_id
+        ? await UsuarioService.createAlunoComInscricao(dados, curso_id)
+        : await UsuarioService.createAluno(dados);
       return res.status(201).json(user);
     } catch (e) {
       return res.status(400).json({ error: e.message });

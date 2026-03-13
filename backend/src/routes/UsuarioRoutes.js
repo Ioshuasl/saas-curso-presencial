@@ -60,7 +60,7 @@ routes.post('/usuarios/admin', validate(adminSchema) , UsuarioController.storeAd
  * @swagger
  * /usuarios/aluno:
  *   post:
- *     summary: Cadastrar um novo aluno
+ *     summary: Cadastrar um novo aluno (opcionalmente já inscrito em um curso)
  *     tags: [Usuários]
  *     requestBody:
  *       required: true
@@ -68,6 +68,26 @@ routes.post('/usuarios/admin', validate(adminSchema) , UsuarioController.storeAd
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               senha:
+ *                 type: string
+ *               nome_completo:
+ *                 type: string
+ *               telefone:
+ *                 type: string
+ *               cidade:
+ *                 type: string
+ *               profissao:
+ *                 type: string
+ *               biografia:
+ *                 type: string
+ *               curso_id:
+ *                 type: integer
+ *                 description: ID do curso para o qual o aluno será automaticamente inscrito
  *     responses:
  *       201:
  *         description: Aluno criado

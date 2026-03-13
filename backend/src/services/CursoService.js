@@ -1,5 +1,8 @@
+import fs from 'fs/promises';
+import path from 'path';
 import { Curso, SessaoCurso, Inscricao, Usuario, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
+import { UPLOADS_PATH } from '../middlewares/upload.js';
 
 class CursoService {
   // --- CADASTRAR CURSO ---
@@ -139,11 +142,17 @@ class CursoService {
     const curso = await Curso.findByPk(id);
     if (!curso) throw new Error('Curso não encontrado');
 
-    // Como definimos os relacionamentos corretamente, 
-    // o Sequelize cuidará da exclusão em cascata das sessões se configurado,
-    // ou podemos garantir manualmente:
     const t = await sequelize.transaction();
     try {
+      // Remove o arquivo de imagem em backend/uploads se existir
+      if (curso.url_imagem && curso.url_imagem.startsWith('/api/uploads/')) {
+        const filename = path.basename(curso.url_imagem);
+        const filePath = path.join(UPLOADS_PATH, filename);
+        await fs.unlink(filePath).catch((err) => {
+          if (err.code !== 'ENOENT') throw err;
+        });
+      }
+
       await SessaoCurso.destroy({ where: { curso_id: id }, transaction: t });
       await curso.destroy({ transaction: t });
       await t.commit();

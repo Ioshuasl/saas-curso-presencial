@@ -20,6 +20,7 @@ export const alunoSchema = z.object({
   cidade: z.string().optional(),
   profissao: z.string().optional(),
   biografia: z.string().max(500, "Biografia muito longa").optional(),
+  curso_id: z.coerce.number().int("curso_id deve ser um número inteiro").positive("curso_id deve ser maior que zero").optional(),
 });
 
 // Schema para atualização (todos os campos tornam-se opcionais)

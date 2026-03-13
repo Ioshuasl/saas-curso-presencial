@@ -2,6 +2,7 @@ import { Router } from 'express';
 import CursoController from '../controllers/CursoController.js';
 import { authMiddleware, adminOnly } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
+import { uploadSingle } from '../middlewares/upload.js';
 import { createCursoSchema, updateCursoSchema } from '../schema/CursoSchema.js';
 
 const routes = new Router();
@@ -122,14 +123,35 @@ routes.get('/cursos/meus', authMiddleware, CursoController.meusCursos);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
+ *             properties:
+ *               imagem:
+ *                 type: string
+ *                 format: binary
+ *                 description: Foto do curso (opcional)
+ *               nome:
+ *                 type: string
+ *               ministrante:
+ *                 type: string
+ *               descricao:
+ *                 type: string
+ *               conteudo:
+ *                 type: string
+ *               valor:
+ *                 type: number
+ *               vagas:
+ *                 type: integer
+ *               local:
+ *                 type: string
+ *               status:
+ *                 type: boolean
  *     responses:
  *       201:
  *         description: Curso criado
  */
-routes.post('/cursos', authMiddleware, adminOnly, validate(createCursoSchema), CursoController.store);
+routes.post('/cursos', authMiddleware, adminOnly, uploadSingle('imagem'), validate(createCursoSchema), CursoController.store);
 /**
  * @swagger
  * /cursos/{id}:
