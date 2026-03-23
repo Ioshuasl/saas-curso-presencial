@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import sequelize from './config/database.js';
 import routes from './routes/index.js';
 import { swaggerSpec, swaggerUiMiddleware } from './config/swagger.js';
@@ -6,6 +7,7 @@ import { swaggerSpec, swaggerUiMiddleware } from './config/swagger.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.json());
 
 app.use('/api', routes);
