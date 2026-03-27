@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  tenantContextFields,
+  refineHasTenantContext,
+} from './TenantContextSchema.js';
 
 const contaPagarBase = {
   descricao: z.string().min(3, 'Descrição muito curta'),
@@ -14,11 +18,17 @@ const contaPagarBase = {
   curso_id: z.coerce.number().int('ID do curso deve ser inteiro').positive('ID do curso inválido').optional(),
 };
 
-export const createContaPagarSchema = z.object({
-  ...contaPagarBase,
-});
+export const createContaPagarSchema = z
+  .object({
+    ...contaPagarBase,
+    ...tenantContextFields,
+  })
+  .superRefine(refineHasTenantContext);
 
-export const updateContaPagarSchema = z.object({
-  ...contaPagarBase,
-}).partial();
+export const updateContaPagarSchema = z
+  .object({
+    ...contaPagarBase,
+    ...tenantContextFields,
+  })
+  .partial();
 

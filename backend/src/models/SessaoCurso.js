@@ -1,11 +1,17 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
+import Tenant from './Tenant.js';
 
 const SessaoCurso = sequelize.define('SessaoCurso', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
+  },
+  tenant_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: { model: Tenant, key: 'id' },
   },
   curso_id: {
     type: DataTypes.INTEGER,

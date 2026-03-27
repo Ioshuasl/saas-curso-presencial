@@ -1,2 +1,7 @@
 export * from './adminUsers'
+export * from './alunoUsers'
+export * from './cursos'
+export * from './dashboard'
+export * from './financeiro'
 export * from './sidebar'
+export * from './tenants'

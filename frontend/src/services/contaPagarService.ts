@@ -1,4 +1,5 @@
 import { api } from './api'
+import { stripTenantScope } from './tenantScope'
 import type {
   ApiMessageResponse,
   ContaPagar,
@@ -10,7 +11,9 @@ import type {
 
 export const contaPagarService = {
   listarContasPagar(params?: ContaPagarListQuery) {
-    return api.get<ContaPagarListResponse>('/contas-pagar', { params })
+    return api.get<ContaPagarListResponse>('/contas-pagar', {
+      params: params ? stripTenantScope(params) : undefined,
+    })
   },
 
   buscarContaPagarPorId(id: number) {
@@ -18,11 +21,11 @@ export const contaPagarService = {
   },
 
   criarContaPagar(payload: CreateContaPagarRequest) {
-    return api.post<ContaPagar>('/contas-pagar', payload)
+    return api.post<ContaPagar>('/contas-pagar', stripTenantScope(payload))
   },
 
   atualizarContaPagar(id: number, payload: UpdateContaPagarRequest) {
-    return api.put<ContaPagar>(`/contas-pagar/${id}`, payload)
+    return api.put<ContaPagar>(`/contas-pagar/${id}`, stripTenantScope(payload))
   },
 
   deletarContaPagar(id: number) {

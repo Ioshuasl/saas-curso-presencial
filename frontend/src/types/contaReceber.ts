@@ -1,27 +1,37 @@
 import type { PaginatedResponse } from './usuario'
+import type { TenantScopedQuery } from './tenant'
 
 export type ParcelaContaReceber = {
-  id: number
-  numero: number
+  id?: number
+  tenant_id?: number
+  numero_parcela: number
+  // compatibilidade com payloads antigos (caso algum lugar envie `numero`)
+  numero?: number
   valor: number
   data_vencimento: string
+  pago?: boolean
   data_pagamento?: string | null
-  status: 'PENDENTE' | 'PAGO' | 'VENCIDO' | string
 }
 
 export type ContaReceber = {
   id: number
-  descricao: string
+  tenant_id?: number
+  aluno_id?: number
+  curso_id?: number
+  forma_pagamento?: 'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO' | string
+  descricao?: string
   valor_total: number
   categoria?: string | null
-  status: 'PENDENTE' | 'PAGO' | 'PARCIAL' | string
+  status?: 'PENDENTE' | 'PAGO' | 'PARCIAL' | string
+  parcelas_pagas?: number
+  parcelas_total?: number
   parcelas?: ParcelaContaReceber[]
-  observacoes?: string | null
+  observacao?: string | null
   createdAt?: string
   updatedAt?: string
 }
 
-export type ContaReceberListQuery = {
+export type ContaReceberListQuery = TenantScopedQuery & {
   page?: number
   limit?: number
   search?: string
@@ -32,17 +42,24 @@ export type ContaReceberListQuery = {
 }
 
 export type CreateParcelaContaReceberRequest = {
-  numero: number
+  numero_parcela: number
+  // compatibilidade
+  numero?: number
   valor: number
   data_vencimento: string
+  pago?: boolean
+  data_pagamento?: string
 }
 
 export type CreateContaReceberRequest = {
-  descricao: string
+  tenant_id?: number
+  tenant_slug?: string
+  aluno_id: number
+  curso_id: number
+  forma_pagamento: 'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO'
+  descricao?: string
   valor_total: number
-  categoria?: string
-  status?: 'PENDENTE' | 'PAGO' | 'PARCIAL'
-  observacoes?: string
+  observacao?: string
   parcelas: CreateParcelaContaReceberRequest[]
 }
 

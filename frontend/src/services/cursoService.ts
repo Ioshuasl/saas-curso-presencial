@@ -1,4 +1,5 @@
 import { api } from './api'
+import { stripTenantScope } from './tenantScope'
 import type {
   ApiMessageResponse,
   Curso,
@@ -11,29 +12,48 @@ import type {
   UpdateCursoRequest,
 } from '../types'
 
-function toCursoFormData(payload: CreateCursoRequest) {
+function toCursoFormData(payload: CreateCursoRequest | UpdateCursoRequest) {
+  const safePayload = stripTenantScope(payload)
   const formData = new FormData()
 
-  formData.append('nome', payload.nome)
-  formData.append('ministrante', payload.ministrante)
-  formData.append('valor', String(payload.valor))
-  formData.append('vagas', String(payload.vagas))
-  formData.append('local', payload.local)
-
-  if (typeof payload.status === 'boolean') {
-    formData.append('status', String(payload.status))
+  if (safePayload.nome != null) {
+    formData.append('nome', String(safePayload.nome))
+  }
+  if (safePayload.ministrante != null) {
+    formData.append('ministrante', String(safePayload.ministrante))
+  }
+  if (safePayload.valor != null) {
+    formData.append('valor', String(safePayload.valor))
+  }
+  if (safePayload.vagas != null) {
+    formData.append('vagas', String(safePayload.vagas))
+  }
+  if (safePayload.local != null) {
+    formData.append('local', String(safePayload.local))
   }
 
-  if (payload.descricao) {
-    formData.append('descricao', payload.descricao)
+  if (typeof safePayload.status === 'boolean') {
+    formData.append('status', String(safePayload.status))
   }
 
-  if (payload.conteudo) {
-    formData.append('conteudo', payload.conteudo)
+  if (safePayload.descricao) {
+    formData.append('descricao', safePayload.descricao)
   }
 
-  if (payload.imagem) {
-    formData.append('imagem', payload.imagem)
+  if (safePayload.conteudo) {
+    formData.append('conteudo', safePayload.conteudo)
+  }
+
+  if (safePayload.imagem) {
+    formData.append('imagem', safePayload.imagem)
+  }
+
+  if (Array.isArray(safePayload.sessoes) && safePayload.sessoes.length > 0) {
+    formData.append('sessoes', JSON.stringify(safePayload.sessoes))
+  }
+
+  if (safePayload.url_imagem === null) {
+    formData.append('url_imagem', '')
   }
 
   return formData
@@ -68,7 +88,10 @@ export const cursoService = {
   },
 
   atualizarCurso(id: number, payload: UpdateCursoRequest) {
-    return api.put<Curso>(`/cursos/${id}`, payload)
+    const body = toCursoFormData(payload)
+    return api.put<Curso>(`/cursos/${id}`, body, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
   },
 
   deletarCurso(id: number) {

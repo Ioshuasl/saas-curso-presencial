@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { uploadSingle } from '../middlewares/upload.js';
 import { authMiddleware } from '../middlewares/auth.js';
+import { uploadToS3 } from '../config/aws-s3.js';
+import { resolveTenantIdForAdminRequest } from '../utils/tenantAdminContext.js';
 
 const router = new Router();
 
@@ -8,7 +10,7 @@ const router = new Router();
  * @swagger
  * tags:
  *   name: Uploads
- *   description: Envio de arquivos (armazenamento local em backend/uploads)
+ *   description: Envio de arquivos (armazenamento em AWS S3)
  */
 
 /**
@@ -42,7 +44,10 @@ const router = new Router();
  *               properties:
  *                 url:
  *                   type: string
- *                   example: /api/uploads/arquivo-1234567890-123456789.jpg
+ *                   example: https://bucket.s3.sa-east-1.amazonaws.com/tenants/1/uploads/arquivo.jpg
+ *                 key:
+ *                   type: string
+ *                   example: tenants/1/uploads/arquivo.jpg
  *                 filename:
  *                   type: string
  *                 originalname:
@@ -54,18 +59,25 @@ const router = new Router();
  *       401:
  *         description: Não autorizado
  */
-router.post('/', authMiddleware, uploadSingle('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'Nenhum arquivo enviado. Use o campo "file" no form-data.' });
+router.post('/', authMiddleware, uploadSingle('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhum arquivo enviado. Use o campo "file" no form-data.' });
+    }
+
+    const tenantId = await resolveTenantIdForAdminRequest(req);
+    const prefix = `tenants/${tenantId}/uploads`;
+    const { key, url } = await uploadToS3(req.file, prefix);
+    return res.status(200).json({
+      url,
+      key,
+      originalname: req.file.originalname,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro ao enviar arquivo para o S3.' });
   }
-  const url = `/api/uploads/${req.file.filename}`;
-  return res.status(200).json({
-    url,
-    filename: req.file.filename,
-    originalname: req.file.originalname,
-    size: req.file.size,
-    mimetype: req.file.mimetype,
-  });
 });
 
 export default router;

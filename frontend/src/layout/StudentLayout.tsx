@@ -7,6 +7,8 @@ type StudentLayoutProps = PropsWithChildren<{
   onToggleTheme: () => void
   onLogout: () => void
   theme: 'light' | 'dark'
+  pageTitle?: string
+  pageSubtitle?: string
 }>
 
 const studentMenuItems: SidebarMenuItem[] = [
@@ -22,12 +24,14 @@ export function StudentLayout({
   onToggleTheme,
   onLogout,
   theme,
+  pageTitle,
+  pageSubtitle,
 }: StudentLayoutProps) {
   return (
     <CrmLayout
-      sectionLabel="Area do aluno"
-      panelTitle="Minha jornada"
       menuItems={studentMenuItems}
+      title={pageTitle}
+      subtitle={pageSubtitle}
       theme={theme}
       onToggleTheme={onToggleTheme}
       onLogout={onLogout}

@@ -1,74 +1,84 @@
 import ContaReceberService from '../services/ContaReceberService.js';
+import { resolveTenantIdForAdminRequest } from '../utils/tenantAdminContext.js';
+
+function resolveErrorStatus(error, fallbackStatus) {
+  if (error?.message === 'tenantId não disponível no contexto autenticado') {
+    return 401;
+  }
+  return fallbackStatus;
+}
 
 class ContaReceberController {
-  // --- CRIAR CONTA A RECEBER + PARCELAS ---
   async store(req, res) {
     try {
-      const conta = await ContaReceberService.create(req.body);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      const conta = await ContaReceberService.create(tenantId, req.body);
       return res.status(201).json(conta);
     } catch (e) {
-      return res.status(400).json({ error: e.message });
+      return res.status(resolveErrorStatus(e, 400)).json({ error: e.message });
     }
   }
 
-  // --- LISTAR CONTAS A RECEBER (com filtros e paginação) ---
   async index(req, res) {
     try {
-      const resultado = await ContaReceberService.findAll(req.query);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      const resultado = await ContaReceberService.findAll(tenantId, req.query);
       return res.json(resultado);
     } catch (e) {
-      return res.status(500).json({ error: 'Erro ao buscar contas a receber' });
+      return res
+        .status(resolveErrorStatus(e, 500))
+        .json({ error: e?.message || 'Erro ao buscar contas a receber' });
     }
   }
 
-  // --- BUSCAR CONTA A RECEBER POR ID ---
   async show(req, res) {
     try {
-      const conta = await ContaReceberService.findById(req.params.id);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      const conta = await ContaReceberService.findById(req.params.id, tenantId);
       return res.json(conta);
     } catch (e) {
-      return res.status(404).json({ error: e.message });
+      return res.status(resolveErrorStatus(e, 404)).json({ error: e.message });
     }
   }
 
-  // --- ATUALIZAR CONTA A RECEBER E PARCELAS ---
   async update(req, res) {
     try {
-      const conta = await ContaReceberService.update(req.params.id, req.body);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      const conta = await ContaReceberService.update(req.params.id, tenantId, req.body);
       return res.json(conta);
     } catch (e) {
-      return res.status(400).json({ error: e.message });
+      return res.status(resolveErrorStatus(e, 400)).json({ error: e.message });
     }
   }
 
-  // --- EXCLUIR CONTA A RECEBER ---
   async delete(req, res) {
     try {
-      await ContaReceberService.delete(req.params.id);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      await ContaReceberService.delete(req.params.id, tenantId);
       return res.status(204).send();
     } catch (e) {
-      return res.status(400).json({ error: e.message });
+      return res.status(resolveErrorStatus(e, 400)).json({ error: e.message });
     }
   }
 
-  // --- MARCAR PARCELA COMO PAGA ---
   async marcarParcelaComoPaga(req, res) {
     try {
+      const tenantId = await resolveTenantIdForAdminRequest(req);
       const { id, parcela_id } = req.params;
       const { data_pagamento } = req.body;
 
       const parcela = await ContaReceberService.marcarParcelaComoPaga(
         id,
         parcela_id,
+        tenantId,
         data_pagamento ? new Date(data_pagamento) : new Date(),
       );
 
       return res.json(parcela);
     } catch (e) {
-      return res.status(400).json({ error: e.message });
+      return res.status(resolveErrorStatus(e, 400)).json({ error: e.message });
     }
   }
 }
 
 export default new ContaReceberController();
-

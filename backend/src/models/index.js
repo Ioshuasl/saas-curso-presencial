@@ -1,4 +1,6 @@
 import sequelize from '../config/database.js';
+import Tenant from './Tenant.js';
+import Config from './Config.js';
 import Usuario from './Usuario.js';
 import PerfilAdministrador from './PerfilAdministrador.js';
 import PerfilAluno from './PerfilAluno.js';
@@ -10,6 +12,49 @@ import FeedbackFinal from './FeedbackFinal.js';
 import ContaPagar from './ContaPagar.js';
 import ContaReceber from './ContaReceber.js';
 import ParcelaContaReceber from './ParcelaContaReceber.js';
+
+// --- Tenant e Config (1:1) ---
+Tenant.hasOne(Config, {
+  foreignKey: 'tenant_id',
+  as: 'config',
+  onDelete: 'CASCADE',
+  hooks: true,
+});
+Config.belongsTo(Tenant, { foreignKey: 'tenant_id', onDelete: 'CASCADE' });
+
+// --- Tenant ↔ demais entidades (multi-tenant) ---
+Tenant.hasMany(Usuario, { foreignKey: 'tenant_id', as: 'usuarios' });
+Usuario.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(PerfilAdministrador, { foreignKey: 'tenant_id', as: 'perfis_administrador' });
+PerfilAdministrador.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(PerfilAluno, { foreignKey: 'tenant_id', as: 'perfis_aluno' });
+PerfilAluno.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(Curso, { foreignKey: 'tenant_id', as: 'cursos' });
+Curso.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(SessaoCurso, { foreignKey: 'tenant_id', as: 'sessoes_curso' });
+SessaoCurso.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(Inscricao, { foreignKey: 'tenant_id', as: 'inscricoes' });
+Inscricao.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(QuestionarioInicial, { foreignKey: 'tenant_id', as: 'questionarios_iniciais' });
+QuestionarioInicial.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(FeedbackFinal, { foreignKey: 'tenant_id', as: 'feedbacks_finais' });
+FeedbackFinal.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(ContaPagar, { foreignKey: 'tenant_id', as: 'contas_pagar' });
+ContaPagar.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(ContaReceber, { foreignKey: 'tenant_id', as: 'contas_receber' });
+ContaReceber.belongsTo(Tenant, { foreignKey: 'tenant_id' });
+
+Tenant.hasMany(ParcelaContaReceber, { foreignKey: 'tenant_id', as: 'parcelas_conta_receber' });
+ParcelaContaReceber.belongsTo(Tenant, { foreignKey: 'tenant_id' });
 
 // --- Relacionamentos de Perfil ---
 Usuario.hasOne(PerfilAdministrador, { foreignKey: 'usuario_id', as: 'perfil_admin' });
@@ -32,6 +77,16 @@ SessaoCurso.belongsTo(Curso, { foreignKey: 'curso_id' });
 // Inscrições do aluno (1:N) — para incluir questionário/feedback por inscrição
 Usuario.hasMany(Inscricao, { foreignKey: 'aluno_id', as: 'inscricoes' });
 Inscricao.belongsTo(Usuario, { foreignKey: 'aluno_id' });
+
+// Inscrição pertence a um curso (N:1) — necessário para include { as: 'curso' }
+Curso.hasMany(Inscricao, {
+  foreignKey: 'curso_id',
+  as: 'inscricoes',
+});
+Inscricao.belongsTo(Curso, {
+  foreignKey: 'curso_id',
+  as: 'curso',
+});
 
 // Relacionamento Muitos-para-Muitos (N:N) Alunos <-> Cursos
 // Um Aluno (Usuario com role ALUNO) pode ter várias inscrições
@@ -98,6 +153,8 @@ ParcelaContaReceber.belongsTo(ContaReceber, { foreignKey: 'conta_receber_id' });
 
 export {
   sequelize,
+  Tenant,
+  Config,
   Usuario,
   PerfilAdministrador,
   PerfilAluno,

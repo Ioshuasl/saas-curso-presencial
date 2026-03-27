@@ -1,22 +1,26 @@
-import bcrypt from 'bcrypt';
-import { Usuario, PerfilAdministrador, PerfilAluno, Inscricao, QuestionarioInicial, FeedbackFinal, sequelize } from '../models/index.js';
+import { Usuario, PerfilAdministrador, PerfilAluno, Inscricao, QuestionarioInicial, FeedbackFinal, Curso, SessaoCurso, sequelize } from '../models/index.js';
 import { gerarHash, compararHash, gerarToken } from '../utils/security.js';
-import { Op } from 'sequelize';
+import { resolveTenantId, omitTenantContext } from '../utils/tenantContext.js';
+import { mergeTenantWhere, requireTenantId } from '../utils/tenantScope.js';
+import { Op, literal } from 'sequelize';
 import InscricaoService from '../services/InscricaoService.js';
 
 class UsuarioService {
 
   // --- CREATE ---
-  async createAdmin(dados) {
+  async createAdmin(tenantId, dados) {
+    const tenant_id = requireTenantId(tenantId);
     const t = await sequelize.transaction();
     try {
-      const senha_hash = await gerarHash(dados.senha);
+      const clean = omitTenantContext(dados);
+      const { nome_completo, senha, ...usuarioFields } = clean;
+      const senha_hash = await gerarHash(senha);
       const usuario = await Usuario.create(
-        { ...dados, senha_hash, role: 'ADMIN' },
+        { ...usuarioFields, senha_hash, role: 'ADMIN', tenant_id },
         { transaction: t }
       );
       await PerfilAdministrador.create(
-        { usuario_id: usuario.id, nome_completo: dados.nome_completo },
+        { usuario_id: usuario.id, nome_completo, tenant_id },
         { transaction: t }
       );
       await t.commit();
@@ -27,22 +31,35 @@ class UsuarioService {
     }
   }
 
-  async createAluno(dados) {
+  async createAluno(tenantId, dados) {
+    const tenant_id = requireTenantId(tenantId);
     const t = await sequelize.transaction();
     try {
-      const senha_hash = await gerarHash(dados.senha);
+      const clean = omitTenantContext(dados);
+      const {
+        nome_completo,
+        senha,
+        telefone,
+        cidade,
+        profissao,
+        biografia,
+        curso_id,
+        ...usuarioFields
+      } = clean;
+      const senha_hash = await gerarHash(senha);
       const usuario = await Usuario.create(
-        { ...dados, senha_hash, role: 'ALUNO' },
+        { ...usuarioFields, senha_hash, role: 'ALUNO', tenant_id },
         { transaction: t }
       );
       await PerfilAluno.create(
-        { 
-          usuario_id: usuario.id, 
-          nome_completo: dados.nome_completo,
-          telefone: dados.telefone,
-          cidade: dados.cidade,
-          profissao: dados.profissao,
-          biografia: dados.biografia
+        {
+          usuario_id: usuario.id,
+          nome_completo,
+          telefone,
+          cidade,
+          profissao,
+          biografia,
+          tenant_id,
         },
         { transaction: t }
       );
@@ -55,29 +72,47 @@ class UsuarioService {
   }
 
   // --- CREATE ALUNO + INSCRIÇÃO EM CURSO ---
-  async createAlunoComInscricao(dados, curso_id) {
+  async createAlunoComInscricao(tenantId, dados, curso_id) {
+    const tenant_id = requireTenantId(tenantId);
     const t = await sequelize.transaction();
     try {
-      const senha_hash = await gerarHash(dados.senha);
+      const curso = await Curso.findByPk(curso_id, { transaction: t });
+      if (!curso) throw new Error('Curso não encontrado');
+      if (Number(curso.tenant_id) !== Number(tenant_id)) {
+        throw new Error('Curso não pertence ao tenant informado');
+      }
+
+      const clean = omitTenantContext(dados);
+      const {
+        nome_completo,
+        senha,
+        telefone,
+        cidade,
+        profissao,
+        biografia,
+        curso_id: _ignore,
+        ...usuarioFields
+      } = clean;
+      const senha_hash = await gerarHash(senha);
       const usuario = await Usuario.create(
-        { ...dados, senha_hash, role: 'ALUNO' },
+        { ...usuarioFields, senha_hash, role: 'ALUNO', tenant_id },
         { transaction: t },
       );
 
       await PerfilAluno.create(
         {
           usuario_id: usuario.id,
-          nome_completo: dados.nome_completo,
-          telefone: dados.telefone,
-          cidade: dados.cidade,
-          profissao: dados.profissao,
-          biografia: dados.biografia,
+          nome_completo,
+          telefone,
+          cidade,
+          profissao,
+          biografia,
+          tenant_id,
         },
         { transaction: t },
       );
 
-      // Cria a inscrição do aluno no curso dentro da mesma transação
-      await InscricaoService.create(usuario.id, curso_id, t);
+      await InscricaoService.create(usuario.id, curso_id, t, tenant_id);
 
       await t.commit();
       return usuario;
@@ -88,7 +123,8 @@ class UsuarioService {
   }
 
   // --- READ (com filtros e paginação) ---
-  async findAllAdmins(params = {}) {
+  async findAllAdmins(tenantId, params = {}) {
+    const tid = requireTenantId(tenantId);
     const {
       page = 1,
       limit = 10,
@@ -107,16 +143,18 @@ class UsuarioService {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
     const offset = (pageNum - 1) * limitNum;
 
-    const where = { role: 'ADMIN' };
+    const extra = { role: 'ADMIN' };
     if (username != null && String(username).trim() !== '') {
-      where.username = { [Op.iLike]: `%${String(username).trim()}%` };
+      extra.username = { [Op.iLike]: `%${String(username).trim()}%` };
     }
     if (email != null && String(email).trim() !== '') {
-      where.email = { [Op.iLike]: `%${String(email).trim()}%` };
+      extra.email = { [Op.iLike]: `%${String(email).trim()}%` };
     }
     if (status !== undefined && status !== '') {
-      where.status = status === 'true' || status === true;
+      extra.status = status === 'true' || status === true;
     }
+
+    const where = mergeTenantWhere(tid, extra);
 
     const include = {
       model: PerfilAdministrador,
@@ -154,7 +192,8 @@ class UsuarioService {
     };
   }
 
-  async findAllAlunos(params = {}) {
+  async findAllAlunos(tenantId, params = {}) {
+    const tid = requireTenantId(tenantId);
     const {
       page = 1,
       limit = 10,
@@ -175,16 +214,18 @@ class UsuarioService {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
     const offset = (pageNum - 1) * limitNum;
 
-    const where = { role: 'ALUNO' };
+    const extra = { role: 'ALUNO' };
     if (username != null && String(username).trim() !== '') {
-      where.username = { [Op.iLike]: `%${String(username).trim()}%` };
+      extra.username = { [Op.iLike]: `%${String(username).trim()}%` };
     }
     if (email != null && String(email).trim() !== '') {
-      where.email = { [Op.iLike]: `%${String(email).trim()}%` };
+      extra.email = { [Op.iLike]: `%${String(email).trim()}%` };
     }
     if (status !== undefined && status !== '') {
-      where.status = status === 'true' || status === true;
+      extra.status = status === 'true' || status === true;
     }
+
+    const where = mergeTenantWhere(tid, extra);
 
     const include = {
       model: PerfilAluno,
@@ -213,7 +254,20 @@ class UsuarioService {
     const { count, rows } = await Usuario.findAndCountAll({
       where,
       include: [include],
-      attributes: { exclude: ['senha_hash'] },
+      attributes: {
+        exclude: ['senha_hash'],
+        include: [
+          [
+            literal(`(
+              SELECT COUNT(DISTINCT i.curso_id)
+              FROM inscricoes i
+              WHERE i.aluno_id = "Usuario"."id"
+                AND i.tenant_id = ${Number(tid)}
+            )`),
+            'total_cursos_inscritos',
+          ],
+        ],
+      },
       order: orderClause,
       limit: limitNum,
       offset,
@@ -232,24 +286,53 @@ class UsuarioService {
     };
   }
 
-  async findAdminById(id) {
-    return await Usuario.findOne({ 
-      where: { id, role: 'ADMIN' }, 
-      include: { model: PerfilAdministrador, as: 'perfil_admin' } 
+  async findAdminById(id, tenantId) {
+    const tid = requireTenantId(tenantId);
+    return await Usuario.findOne({
+      where: mergeTenantWhere(tid, { id, role: 'ADMIN' }),
+      include: { model: PerfilAdministrador, as: 'perfil_admin' },
     });
   }
 
-  async findAlunoById(id) {
-    return await Usuario.findOne({ 
-      where: { id, role: 'ALUNO' }, 
+  async findAlunoById(id, tenantId) {
+    const tid = requireTenantId(tenantId);
+    return await Usuario.findOne({
+      where: mergeTenantWhere(tid, { id, role: 'ALUNO' }),
+      attributes: { exclude: ['senha_hash'] },
       include: [
         { model: PerfilAluno, as: 'perfil_aluno' },
         {
           model: Inscricao,
           as: 'inscricoes',
+          where: { tenant_id: tid },
+          required: false,
           include: [
-            { model: QuestionarioInicial, as: 'questionario_inicial' },
-            { model: FeedbackFinal, as: 'feedback_final' },
+            {
+              model: Curso,
+              as: 'curso',
+              where: { tenant_id: tid },
+              required: false,
+              include: [
+                {
+                  model: SessaoCurso,
+                  as: 'sessoes',
+                  where: { tenant_id: tid },
+                  required: false,
+                },
+              ],
+            },
+            {
+              model: QuestionarioInicial,
+              as: 'questionario_inicial',
+              where: { tenant_id: tid },
+              required: false,
+            },
+            {
+              model: FeedbackFinal,
+              as: 'feedback_final',
+              where: { tenant_id: tid },
+              required: false,
+            },
           ],
         },
       ],
@@ -257,38 +340,75 @@ class UsuarioService {
   }
 
   // --- UPDATE ---
-  async updateAdmin(id, dados) {
+  async updateAdmin(id, tenantId, dados) {
+    const tid = requireTenantId(tenantId);
     const t = await sequelize.transaction();
     try {
-      const usuario = await Usuario.findByPk(id);
+      const usuario = await Usuario.findOne({
+        where: mergeTenantWhere(tid, { id }),
+        transaction: t,
+      });
       if (!usuario) throw new Error('Usuário não encontrado');
 
-      if (dados.senha) dados.senha_hash = await gerarHash(dados.senha);
-      
-      await usuario.update(dados, { transaction: t });
-      await PerfilAdministrador.update(dados, { where: { usuario_id: id }, transaction: t });
+      const dadosUsuario = {};
+      const dadosPerfil = {};
+
+      if (dados.username !== undefined) dadosUsuario.username = dados.username;
+      if (dados.email !== undefined) dadosUsuario.email = dados.email;
+      if (dados.cpf !== undefined) dadosUsuario.cpf = dados.cpf;
+      if (dados.status !== undefined) dadosUsuario.status = dados.status;
+      if (dados.senha) dadosUsuario.senha_hash = await gerarHash(dados.senha);
+      if (dados.nome_completo !== undefined) dadosPerfil.nome_completo = dados.nome_completo;
+
+      if (Object.keys(dadosUsuario).length > 0) {
+        await usuario.update(dadosUsuario, { transaction: t });
+      }
+      if (Object.keys(dadosPerfil).length > 0) {
+        await PerfilAdministrador.update(dadosPerfil, { where: { usuario_id: id }, transaction: t });
+      }
       
       await t.commit();
-      return usuario;
+      return this.findAdminById(id, tid);
     } catch (error) {
       await t.rollback();
       throw error;
     }
   }
 
-  async updateAluno(id, dados) {
+  async updateAluno(id, tenantId, dados) {
+    const tid = requireTenantId(tenantId);
     const t = await sequelize.transaction();
     try {
-      const usuario = await Usuario.findByPk(id);
+      const usuario = await Usuario.findOne({
+        where: mergeTenantWhere(tid, { id }),
+        transaction: t,
+      });
       if (!usuario) throw new Error('Usuário não encontrado');
 
-      if (dados.senha) dados.senha_hash = await gerarHash(dados.senha);
+      const dadosUsuario = {};
+      const dadosPerfil = {};
 
-      await usuario.update(dados, { transaction: t });
-      await PerfilAluno.update(dados, { where: { usuario_id: id }, transaction: t });
+      if (dados.username !== undefined) dadosUsuario.username = dados.username;
+      if (dados.email !== undefined) dadosUsuario.email = dados.email;
+      if (dados.cpf !== undefined) dadosUsuario.cpf = dados.cpf;
+      if (dados.status !== undefined) dadosUsuario.status = dados.status;
+      if (dados.senha) dadosUsuario.senha_hash = await gerarHash(dados.senha);
+
+      if (dados.nome_completo !== undefined) dadosPerfil.nome_completo = dados.nome_completo;
+      if (dados.telefone !== undefined) dadosPerfil.telefone = dados.telefone;
+      if (dados.cidade !== undefined) dadosPerfil.cidade = dados.cidade;
+      if (dados.profissao !== undefined) dadosPerfil.profissao = dados.profissao;
+      if (dados.biografia !== undefined) dadosPerfil.biografia = dados.biografia;
+
+      if (Object.keys(dadosUsuario).length > 0) {
+        await usuario.update(dadosUsuario, { transaction: t });
+      }
+      if (Object.keys(dadosPerfil).length > 0) {
+        await PerfilAluno.update(dadosPerfil, { where: { usuario_id: id }, transaction: t });
+      }
 
       await t.commit();
-      return usuario;
+      return this.findAlunoById(id, tid);
     } catch (error) {
       await t.rollback();
       throw error;
@@ -296,28 +416,29 @@ class UsuarioService {
   }
 
   // --- DELETE ---
-  async deleteUser(id) {
-    // Como usamos onDelete: 'CASCADE', deletar o Usuario remove o Perfil automaticamente
-    const usuario = await Usuario.findByPk(id);
+  async deleteUser(id, tenantId) {
+    const tid = requireTenantId(tenantId);
+    const usuario = await Usuario.findOne({ where: mergeTenantWhere(tid, { id }) });
     if (!usuario) throw new Error('Usuário não encontrado');
     return await usuario.destroy();
   }
 
-  async login(identificador, senha) {
-    // Busca flexível: o identificador pode ser username, email ou cpf
+  async login(identificador, senha, tenantCtx = {}) {
+    const tenant_id = await resolveTenantId(tenantCtx);
+
     const usuario = await Usuario.findOne({
       where: {
+        tenant_id,
         [Op.or]: [
           { username: identificador },
           { email: identificador },
-          { cpf: identificador }
-        ]
+          { cpf: identificador },
+        ],
       },
-      // Incluímos os perfis para saber quem está logando
       include: [
         { model: PerfilAdministrador, as: 'perfil_admin' },
-        { model: PerfilAluno, as: 'perfil_aluno' }
-      ]
+        { model: PerfilAluno, as: 'perfil_aluno' },
+      ],
     });
 
     if (!usuario) throw new Error('Usuário não encontrado');
@@ -326,21 +447,26 @@ class UsuarioService {
     const senhaValida = await compararHash(senha, usuario.senha_hash);
     if (!senhaValida) throw new Error('Senha inválida');
 
-    // Gerar o token com ID e Role
-    const token = gerarToken({ id: usuario.id, role: usuario.role });
+    const token = gerarToken({
+      id: usuario.id,
+      role: usuario.role,
+      tenant_id: usuario.tenant_id,
+    });
 
     return { usuario, token };
   }
 
-  async getMe(id) {
-    const usuario = await Usuario.findByPk(id, {
-      attributes: { exclude: ['senha_hash'] }, // Segurança: nunca retorna a senha
+  async getMe(id, tenantId) {
+    const tid = requireTenantId(tenantId);
+    const usuario = await Usuario.findOne({
+      where: mergeTenantWhere(tid, { id }),
+      attributes: { exclude: ['senha_hash'] },
       include: [
         { model: PerfilAdministrador, as: 'perfil_admin' },
-        { model: PerfilAluno, as: 'perfil_aluno' }
-      ]
+        { model: PerfilAluno, as: 'perfil_aluno' },
+      ],
     });
-    
+
     if (!usuario) throw new Error('Usuário não encontrado');
     return usuario;
   }

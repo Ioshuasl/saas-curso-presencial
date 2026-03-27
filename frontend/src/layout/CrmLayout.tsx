@@ -1,44 +1,38 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { UserCircle2 } from 'lucide-react'
 import { useState, type PropsWithChildren } from 'react'
 
 import { Sidebar } from '../components'
 import type { SidebarMenuItem } from '../types'
+import { PageHeader } from './PageHeader'
 import { ThemeToggle } from './ThemeToggle'
 
 type CrmLayoutProps = PropsWithChildren<{
-  sectionLabel: string
-  panelTitle: string
   menuItems: SidebarMenuItem[]
+  title?: string
+  subtitle?: string
   onToggleTheme: () => void
   onLogout: () => void
   theme: 'light' | 'dark'
+  showProfileIcon?: boolean
+  profileLabel?: string
 }>
 
 export function CrmLayout({
-  sectionLabel,
-  panelTitle,
   menuItems,
+  title,
+  subtitle,
   onToggleTheme,
   onLogout,
   theme,
+  showProfileIcon = false,
+  profileLabel = 'Usuario logado',
   children,
 }: CrmLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen h-full flex-col bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 2xl:px-10">
-        <div className="flex w-full items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              {sectionLabel}
-            </p>
-            <h1 className="text-lg font-semibold md:text-xl">{panelTitle}</h1>
-          </div>
-          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-        </div>
-      </header>
-
+    <div className="h-dvh min-h-0 overflow-hidden bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.button
@@ -53,15 +47,15 @@ export function CrmLayout({
         )}
       </AnimatePresence>
 
-      <div className="grid min-h-0 w-full flex-1 gap-0 md:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="hidden min-h-0 border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 md:block">
+      <div className="grid h-full min-h-0 w-full gap-0 md:grid-cols-[252px_minmax(0,1fr)] xl:grid-cols-[272px_minmax(0,1fr)]">
+        <aside className="scrollbar-hide hidden border-r border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 md:block md:h-full md:min-h-0 md:overflow-y-auto">
           <Sidebar items={menuItems} onLogout={onLogout} />
         </aside>
 
         <AnimatePresence>
           {isSidebarOpen && (
             <motion.aside
-              className="scrollbar-hide fixed left-0 top-0 z-40 h-full w-[80vw] max-w-[320px] overflow-y-auto border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 md:hidden"
+              className="scrollbar-hide fixed left-0 top-0 z-40 h-full w-[78vw] max-w-[280px] overflow-y-auto border-r border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 md:hidden"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
@@ -77,9 +71,31 @@ export function CrmLayout({
           )}
         </AnimatePresence>
 
-        <main className="min-h-0 overflow-y-auto bg-white p-4 dark:bg-slate-900">
-          {children}
-        </main>
+        <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+          <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 2xl:px-10">
+            <PageHeader
+              title={title}
+              subtitle={subtitle}
+              actions={
+                <>
+                  {showProfileIcon ? (
+                    <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      <UserCircle2 size={18} />
+                      <span className="hidden font-medium sm:inline">{profileLabel}</span>
+                    </div>
+                  ) : null}
+                  <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+                </>
+              }
+            />
+          </header>
+
+          <main className="min-h-0 flex-1 overflow-hidden bg-slate-50/60 dark:bg-slate-950/50">
+            <div className="mx-auto flex h-full min-h-0 w-full max-w-[1600px] flex-col overflow-hidden p-4 md:p-6 lg:p-8">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
 
       <motion.button

@@ -1,12 +1,18 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 import ContaReceber from './ContaReceber.js';
+import Tenant from './Tenant.js';
 
 const ParcelaContaReceber = sequelize.define('ParcelaContaReceber', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
+  },
+  tenant_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: { model: Tenant, key: 'id' },
   },
   conta_receber_id: {
     type: DataTypes.INTEGER,

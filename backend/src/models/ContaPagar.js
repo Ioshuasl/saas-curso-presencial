@@ -1,12 +1,18 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 import Curso from './Curso.js';
+import Tenant from './Tenant.js';
 
 const ContaPagar = sequelize.define('ContaPagar', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
+  },
+  tenant_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: { model: Tenant, key: 'id' },
   },
   descricao: {
     type: DataTypes.STRING,

@@ -7,6 +7,9 @@ type AdminLayoutProps = PropsWithChildren<{
   onToggleTheme: () => void
   onLogout: () => void
   theme: 'light' | 'dark'
+  profileLabel?: string
+  pageTitle?: string
+  pageSubtitle?: string
 }>
 
 const adminMenuItems: SidebarMenuItem[] = [
@@ -23,15 +26,20 @@ export function AdminLayout({
   onToggleTheme,
   onLogout,
   theme,
+  profileLabel,
+  pageTitle,
+  pageSubtitle,
 }: AdminLayoutProps) {
   return (
     <CrmLayout
-      sectionLabel="Painel administrativo"
-      panelTitle="Gestao do negocio"
       menuItems={adminMenuItems}
+      title={pageTitle}
+      subtitle={pageSubtitle}
       theme={theme}
       onToggleTheme={onToggleTheme}
       onLogout={onLogout}
+      showProfileIcon
+      profileLabel={profileLabel ?? 'Administrador'}
     >
       {children}
     </CrmLayout>

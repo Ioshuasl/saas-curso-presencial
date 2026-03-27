@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react'
+import { RefreshCcw, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { AdminUserForm, AdminUsersList } from '../components'
-import { usuarioService } from '../services'
+import { Button } from '../components/ui/Button'
+import { PaginationFooter } from '../components/ui/PaginationFooter'
+import { AdminUserForm, AdminUsersFilters, AdminUsersList } from '../components'
+import { authService, usuarioService } from '../services'
+import { stripTenantScope } from '../services/tenantScope'
 import type {
   AdminListItem,
+  UsuarioListQuery,
   CreateAdminRequest,
   PaginacaoApi,
   UpdateAdminRequest,
 } from '../types'
+import type { AdminUsersFilterValue } from '../components/adminUsers/AdminUsersFilters'
+import { resolveTenantSlugFromBrowser } from '../utils'
 
 export function AdminUsersPage() {
   const [admins, setAdmins] = useState<AdminListItem[]>([])
@@ -17,11 +24,35 @@ export function AdminUsersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedAdmin, setSelectedAdmin] = useState<AdminListItem | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [filters, setFilters] = useState<AdminUsersFilterValue>({
+    nome: '',
+    username: '',
+    email: '',
+    status: 'all',
+  })
+  const activeTenantSlug = authService.getSession()?.tenantSlug ?? resolveTenantSlugFromBrowser()
 
-  async function loadAdmins() {
+  function buildQuery(currentFilters: AdminUsersFilterValue, page = currentPage): UsuarioListQuery {
+    return stripTenantScope({
+      page,
+      limit: 10,
+      nome: currentFilters.nome.trim() || undefined,
+      username: currentFilters.username.trim() || undefined,
+      email: currentFilters.email.trim() || undefined,
+      status:
+        currentFilters.status === 'all'
+          ? undefined
+          : currentFilters.status === 'active'
+            ? 'true'
+            : 'false',
+    })
+  }
+
+  async function loadAdmins(currentFilters = filters, page = currentPage) {
     setIsLoading(true)
     try {
-      const response = await usuarioService.listarAdmins({ page: 1, limit: 10 })
+      const response = await usuarioService.listarAdmins(buildQuery(currentFilters, page))
       setAdmins(response.data.data)
       setPagination(response.data.paginacao)
     } catch {
@@ -34,19 +65,27 @@ export function AdminUsersPage() {
   }
 
   useEffect(() => {
-    void loadAdmins()
-  }, [])
+    void loadAdmins(filters, currentPage)
+  }, [currentPage])
 
   async function handleSubmit(payload: CreateAdminRequest | UpdateAdminRequest) {
+    if (!activeTenantSlug) {
+      if (import.meta.env.DEV) {
+        toast.error('Tenant ativo nao identificado. Faca login novamente.')
+      }
+      return
+    }
+
     setIsSubmitting(true)
     try {
+      const safePayload = stripTenantScope(payload)
       if (selectedAdmin) {
-        await usuarioService.atualizarAdmin(selectedAdmin.id, payload as UpdateAdminRequest)
+        await usuarioService.atualizarAdmin(selectedAdmin.id, safePayload as UpdateAdminRequest)
         if (import.meta.env.DEV) {
           toast.success('Administrador atualizado com sucesso.')
         }
       } else {
-        await usuarioService.criarAdmin(payload as CreateAdminRequest)
+        await usuarioService.criarAdmin(safePayload as CreateAdminRequest)
         if (import.meta.env.DEV) {
           toast.success('Administrador cadastrado com sucesso.')
         }
@@ -54,7 +93,7 @@ export function AdminUsersPage() {
 
       setSelectedAdmin(null)
       setIsFormOpen(false)
-      await loadAdmins()
+      await loadAdmins(filters, currentPage)
     } catch {
       if (import.meta.env.DEV) {
         toast.error('Erro ao salvar administrador.')
@@ -78,7 +117,7 @@ export function AdminUsersPage() {
       if (import.meta.env.DEV) {
         toast.success('Administrador excluido com sucesso.')
       }
-      await loadAdmins()
+      await loadAdmins(filters, currentPage)
     } catch {
       if (import.meta.env.DEV) {
         toast.error('Nao foi possivel excluir o administrador.')
@@ -87,24 +126,79 @@ export function AdminUsersPage() {
   }
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Administradores</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            Listagem e cadastro/atualizacao de usuarios administradores.
-          </p>
+    <section className="scrollbar-hide flex h-full min-h-0 flex-1 flex-col gap-6 overflow-y-auto md:gap-8">
+      <div className="shrink-0 space-y-6">
+        <div className="flex flex-col gap-4 px-1 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-3xl">
+              Base de Administradores
+            </h2>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Gestao de administradores cadastrados, com filtros e edicao rapida.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                void loadAdmins(filters)
+              }}
+              className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 transition hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-indigo-900 dark:hover:text-indigo-300"
+              title="Sincronizar dados"
+              aria-label="Sincronizar dados"
+            >
+              <RefreshCcw size={18} className={isLoading ? 'animate-spin' : ''} />
+            </button>
+            <Button
+              type="button"
+              startIcon={
+                isLoading ? <RefreshCcw size={18} className="animate-spin" /> : <UserPlus size={18} />
+              }
+              onClick={() => {
+                setSelectedAdmin(null)
+                setIsFormOpen(true)
+              }}
+              className="rounded-2xl px-6 py-3 text-sm font-bold shadow-xl shadow-indigo-200/40 dark:shadow-indigo-950/40"
+            >
+              Cadastrar Administrador
+            </Button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedAdmin(null)
-            setIsFormOpen(true)
+
+        <AdminUsersFilters
+          value={filters}
+          isLoading={isLoading}
+          onChange={setFilters}
+          onSearch={() => {
+            if (currentPage === 1) {
+              void loadAdmins(filters, 1)
+            } else {
+              setCurrentPage(1)
+            }
           }}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
-        >
-          Novo administrador
-        </button>
+          onClear={() => {
+            const cleared: AdminUsersFilterValue = {
+              nome: '',
+              username: '',
+              email: '',
+              status: 'all',
+            }
+            setFilters(cleared)
+            if (currentPage === 1) {
+              void loadAdmins(cleared, 1)
+            } else {
+              setCurrentPage(1)
+            }
+          }}
+        />
+
+        {pagination ? (
+          <div className="inline-flex w-fit items-center px-1 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            {pagination.total}{' '}
+            {pagination.total === 1 ? 'Administrador Cadastrado' : 'Administradores Cadastrados'}
+          </div>
+        ) : null}
       </div>
 
       <AdminUserForm
@@ -129,10 +223,16 @@ export function AdminUsersPage() {
       />
 
       {pagination ? (
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Total: {pagination.total} administrador(es) - Pagina {pagination.pagina} de{' '}
-          {pagination.total_paginas}
-        </p>
+        <PaginationFooter
+          total={pagination.total}
+          currentPage={pagination.pagina}
+          totalPages={pagination.total_paginas}
+          itemLabelSingular="administrador"
+          itemLabelPlural="administradores"
+          onPageChange={(page) => {
+            setCurrentPage(page)
+          }}
+        />
       ) : null}
     </section>
   )

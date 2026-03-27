@@ -2,7 +2,13 @@ import { Router } from 'express';
 import UsuarioController from '../controllers/UsuarioController.js';
 import { authMiddleware, adminOnly } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
-import { adminSchema, alunoSchema, updateAdminSchema, updateAlunoSchema } from '../schema/UsuarioSchema.js';
+import {
+  loginSchema,
+  adminCreateAuthenticatedSchema,
+  alunoCreateAuthenticatedSchema,
+  updateAdminSchema,
+  updateAlunoSchema,
+} from '../schema/UsuarioSchema.js';
 
 const routes = new Router();
 
@@ -38,61 +44,7 @@ const routes = new Router();
  *       401:
  *         description: Credenciais inválidas
  */
-routes.post('/login', UsuarioController.login);
-/**
- * @swagger
- * /usuarios/admin:
- *   post:
- *     summary: Cadastrar um novo administrador
- *     tags: [Usuários]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *     responses:
- *       201:
- *         description: Admin criado
- */
-routes.post('/usuarios/admin', validate(adminSchema) , UsuarioController.storeAdmin);
-/**
- * @swagger
- * /usuarios/aluno:
- *   post:
- *     summary: Cadastrar um novo aluno (opcionalmente já inscrito em um curso)
- *     tags: [Usuários]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               email:
- *                 type: string
- *               senha:
- *                 type: string
- *               nome_completo:
- *                 type: string
- *               telefone:
- *                 type: string
- *               cidade:
- *                 type: string
- *               profissao:
- *                 type: string
- *               biografia:
- *                 type: string
- *               curso_id:
- *                 type: integer
- *                 description: ID do curso para o qual o aluno será automaticamente inscrito
- *     responses:
- *       201:
- *         description: Aluno criado
- */
-routes.post('/usuarios/aluno', validate(alunoSchema), UsuarioController.storeAluno);
+routes.post('/login', validate(loginSchema), UsuarioController.login);
 
 // --- Rotas Protegidas (Precisa estar Logado) ---
 routes.use(authMiddleware);
@@ -153,6 +105,54 @@ routes.get('/usuarios/admins', adminOnly, UsuarioController.indexAdmin);
 routes.get('/usuarios/alunos', adminOnly, UsuarioController.indexAluno);
 /**
  * @swagger
+ * /usuarios/admin:
+ *   post:
+ *     summary: Cadastrar um novo administrador (tenant do token)
+ *     tags: [Usuários]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Admin criado
+ */
+routes.post(
+  '/usuarios/admin',
+  adminOnly,
+  validate(adminCreateAuthenticatedSchema),
+  UsuarioController.storeAdmin,
+);
+/**
+ * @swagger
+ * /usuarios/aluno:
+ *   post:
+ *     summary: Cadastrar um novo aluno (tenant do token; opcional curso_id)
+ *     tags: [Usuários]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Aluno criado
+ */
+routes.post(
+  '/usuarios/aluno',
+  adminOnly,
+  validate(alunoCreateAuthenticatedSchema),
+  UsuarioController.storeAluno,
+);
+/**
+ * @swagger
  * /usuarios/admin/{id}:
  *   get:
  *     summary: Buscar administrador por ID
@@ -189,8 +189,8 @@ routes.get('/usuarios/admin/:id', adminOnly, UsuarioController.showAdmin);
  *         description: Aluno encontrado
  */
 routes.get('/usuarios/aluno/:id', adminOnly, UsuarioController.showAluno);
-routes.put('/usuarios/admin/:id', validate(updateAdminSchema), adminOnly, UsuarioController.updateAdmin);
-routes.put('/usuarios/aluno/:id', validate(updateAlunoSchema), adminOnly, UsuarioController.updateAluno);
+routes.put('/usuarios/admin/:id', adminOnly, validate(updateAdminSchema), UsuarioController.updateAdmin);
+routes.put('/usuarios/aluno/:id', adminOnly, validate(updateAlunoSchema), UsuarioController.updateAluno);
 routes.delete('/usuarios/:id', adminOnly, UsuarioController.delete);
 
 export default routes;

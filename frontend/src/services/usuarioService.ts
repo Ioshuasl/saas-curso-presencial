@@ -1,14 +1,16 @@
 import { api } from './api'
+import { stripTenantScope } from './tenantScope'
 import type {
   Admin,
   AdminListResponse,
   Aluno,
+  AlunoDetalheResponse,
+  AlunoListResponse,
   ApiMessageResponse,
   CreateAdminRequest,
   CreateAlunoRequest,
   LoginRequest,
   LoginResponse,
-  PaginatedResponse,
   UpdateAdminRequest,
   UpdateAlunoRequest,
   UsuarioBase,
@@ -21,11 +23,11 @@ export const usuarioService = {
   },
 
   criarAdmin(payload: CreateAdminRequest) {
-    return api.post<Admin>('/usuarios/admin', payload)
+    return api.post<Admin>('/usuarios/admin', stripTenantScope(payload))
   },
 
   criarAluno(payload: CreateAlunoRequest) {
-    return api.post<Aluno>('/usuarios/aluno', payload)
+    return api.post<Aluno>('/usuarios/aluno', stripTenantScope(payload))
   },
 
   me() {
@@ -37,11 +39,11 @@ export const usuarioService = {
   },
 
   listarAdmins(params?: UsuarioListQuery) {
-    return api.get<AdminListResponse>('/usuarios/admins', { params })
+    return api.get<AdminListResponse>('/usuarios/admins', { params: params ? stripTenantScope(params) : undefined })
   },
 
   listarAlunos(params?: UsuarioListQuery) {
-    return api.get<PaginatedResponse<Aluno>>('/usuarios/alunos', { params })
+    return api.get<AlunoListResponse>('/usuarios/alunos', { params: params ? stripTenantScope(params) : undefined })
   },
 
   buscarAdminPorId(id: number) {
@@ -49,15 +51,15 @@ export const usuarioService = {
   },
 
   buscarAlunoPorId(id: number) {
-    return api.get<Aluno>(`/usuarios/aluno/${id}`)
+    return api.get<AlunoDetalheResponse>(`/usuarios/aluno/${id}`)
   },
 
   atualizarAdmin(id: number, payload: UpdateAdminRequest) {
-    return api.put<Admin>(`/usuarios/admin/${id}`, payload)
+    return api.put<Admin>(`/usuarios/admin/${id}`, stripTenantScope(payload))
   },
 
   atualizarAluno(id: number, payload: UpdateAlunoRequest) {
-    return api.put<Aluno>(`/usuarios/aluno/${id}`, payload)
+    return api.put<Aluno>(`/usuarios/aluno/${id}`, stripTenantScope(payload))
   },
 
   deletarUsuario(id: number) {

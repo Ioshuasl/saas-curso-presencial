@@ -1,21 +1,74 @@
 import { useEffect, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
 
 import './App.css'
 import { AppLayout } from './layout'
-import { AdminUsersPage, HomePage, LoginPage } from './pages'
-import { authService } from './services'
+import {
+  AdminCursoPage,
+  AdminDashboardPage,
+  AdminUsersPage,
+  AlunosPage,
+  FinanceiroPage,
+  HomePage,
+  LoginPage,
+  TenantsPage,
+} from './pages'
+import { authService, usuarioService } from './services'
 import type { UserRole, UsuarioBase } from './types'
+import { resolveTenantNavigationAction, resolveTenantSlugFromBrowser } from './utils'
 
 function resolveUserRole(user: UsuarioBase): UserRole {
   const rawRole = String(user.role ?? user.tipo ?? '').toUpperCase()
-  return rawRole === 'ADMIN' ? 'admin' : 'student'
+  if (rawRole === 'ADMIN') return 'admin'
+  if (rawRole === 'SAAS_ADMIN') return 'saas_admin'
+  return 'student'
 }
 
 function App() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [isCheckingSession, setIsCheckingSession] = useState(true)
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null)
+  const [currentUser, setCurrentUser] = useState<UsuarioBase | null>(null)
+  const currentSession = authService.getSession()
+  const urlTenantSlug = resolveTenantSlugFromBrowser()
+  const sessionTenantSlug = currentSession?.tenantSlug
+  const isSaasAdminSession = currentRole === 'saas_admin'
+  const tenantNavigationAction = resolveTenantNavigationAction({
+    isAuthenticated: Boolean(currentRole) && !isSaasAdminSession,
+    sessionTenantSlug,
+    urlTenantSlug,
+  })
+  const hasTenantMismatch =
+    !isSaasAdminSession && tenantNavigationAction === 'force_relogin_mismatch'
+  const tenantSearch = sessionTenantSlug
+    ? `?tenant_slug=${encodeURIComponent(sessionTenantSlug)}`
+    : ''
+
+  const pageTitleByPath: Record<string, string> = {
+    '/dashboard': 'Dashboard',
+    '/admins': 'Usuários',
+    '/alunos': 'Alunos',
+    '/cursos': 'Cursos',
+    '/financeiro': 'Financeiro',
+    '/tenants': 'Tenants',
+  }
+
+  const currentPageTitle = pageTitleByPath[location.pathname]
+
+  function getProfileLabel(user: UsuarioBase | null) {
+    if (!user) {
+      return 'Administrador'
+    }
+
+    return (
+      user.perfil_admin?.nome_completo ??
+      user.perfil_aluno?.nome_completo ??
+      user.nome_completo ??
+      user.username
+    )
+  }
 
   useEffect(() => {
     async function bootstrapSession() {
@@ -25,11 +78,13 @@ function App() {
       }
 
       try {
-        const response = await authService.me()
+        const response = await usuarioService.me()
         const user = response.data
+        setCurrentUser(user)
         setCurrentRole(resolveUserRole(user))
       } catch {
         authService.clearToken()
+        setCurrentUser(null)
         setCurrentRole(null)
       } finally {
         setIsCheckingSession(false)
@@ -38,6 +93,37 @@ function App() {
 
     bootstrapSession()
   }, [])
+
+  useEffect(() => {
+    if (hasTenantMismatch) {
+      void authService.logout()
+      setCurrentUser(null)
+      setCurrentRole(null)
+      navigate(`/login${location.search}`, { replace: true })
+      return
+    }
+
+    // Se não há tenant na URL, sincroniza com a sessão.
+    // Se há mismatch explícito, forçamos novo login no tenant da URL.
+    if (tenantNavigationAction !== 'sync_url_to_session') return
+
+    navigate(
+      {
+        pathname: location.pathname,
+        search: tenantSearch,
+      },
+      { replace: true },
+    )
+  }, [
+    currentRole,
+    hasTenantMismatch,
+    location.pathname,
+    navigate,
+    sessionTenantSlug,
+    tenantSearch,
+    tenantNavigationAction,
+    urlTenantSlug,
+  ])
 
   if (isCheckingSession) {
     return (
@@ -59,7 +145,8 @@ function App() {
           <Toaster position="top-right" richColors closeButton />
         ) : null}
         <LoginPage
-          onLoginSuccess={({ role }) => {
+          onLoginSuccess={({ user, role }) => {
+            setCurrentUser(user)
             setCurrentRole(role)
           }}
         />
@@ -74,20 +161,31 @@ function App() {
       ) : null}
       <AppLayout
         role={currentRole}
+        pageTitle={currentPageTitle}
         onLogout={() => {
           void authService.logout()
+          setCurrentUser(null)
           setCurrentRole(null)
         }}
+        profileLabel={getProfileLabel(currentUser)}
       >
-        {currentRole === 'admin' ? (
+        {currentRole === 'saas_admin' ? (
           <Routes>
+            <Route path="/tenants" element={<TenantsPage />} />
+            <Route path="*" element={<Navigate to="/tenants" replace />} />
+          </Routes>
+        ) : currentRole === 'admin' ? (
+          <Routes>
+            <Route path="/dashboard" element={<AdminDashboardPage />} />
             <Route path="/admins" element={<AdminUsersPage />} />
-            <Route path="/dashboard" element={<HomePage role={currentRole} />} />
-            <Route path="/cursos" element={<HomePage role={currentRole} />} />
-            <Route path="/alunos" element={<HomePage role={currentRole} />} />
-            <Route path="/financeiro" element={<HomePage role={currentRole} />} />
+            <Route path="/cursos" element={<AdminCursoPage />} />
+            <Route path="/alunos" element={<AlunosPage />} />
+            <Route path="/financeiro" element={<FinanceiroPage />} />
             <Route path="/configuracoes" element={<HomePage role={currentRole} />} />
-            <Route path="*" element={<Navigate to="/admins" replace />} />
+            <Route
+              path="*"
+              element={<Navigate to={`/dashboard${tenantSearch}`} replace />}
+            />
           </Routes>
         ) : (
           <Routes>
@@ -96,7 +194,7 @@ function App() {
             <Route path="/pagamentos" element={<HomePage role={currentRole} />} />
             <Route path="/perfil" element={<HomePage role={currentRole} />} />
             <Route path="/feedback" element={<HomePage role={currentRole} />} />
-            <Route path="*" element={<Navigate to="/catalogo" replace />} />
+            <Route path="*" element={<Navigate to={`/catalogo${tenantSearch}`} replace />} />
           </Routes>
         )}
       </AppLayout>

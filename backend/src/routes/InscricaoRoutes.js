@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import InscricaoController from '../controllers/InscricaoController.js';
-import { authMiddleware } from '../middlewares/auth.js';
+import { authMiddleware, adminOnly } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import {
   createInscricaoSchema,
   deleteInscricaoSchema,
   confirmarPresencaSchema,
+  findByCursoSchema,
 } from '../schema/InscricaoSchema.js';
 
 const routes = new Router();
@@ -55,6 +56,9 @@ routes.get('/minhas-inscricoes', InscricaoController.myEnrollments);
  */
 routes.post('/inscricoes', validate(createInscricaoSchema), InscricaoController.store);
 
+// Total de inscrições (admin) — deve vir antes de rotas com :curso_id genérico
+routes.get('/inscricoes/contagem', adminOnly, InscricaoController.count);
+
 // O aluno confirma presença em um curso em que está inscrito
 /**
  * @swagger
@@ -78,6 +82,13 @@ routes.post(
   '/inscricoes/:curso_id/confirmar-presenca',
   validate(confirmarPresencaSchema),
   InscricaoController.confirmarPresenca,
+);
+
+// Admin lista inscrições por curso (com dados do curso + alunos inscritos)
+routes.get(
+  '/inscricoes/curso/:curso_id',
+  adminOnly,
+  InscricaoController.findByCurso,
 );
 
 // O aluno cancela ou o Admin remove

@@ -1,11 +1,23 @@
 import { api } from './api'
-import { clearAuthToken, getAuthToken, setAuthToken } from './authToken'
+import {
+  clearAuthSession,
+  getAuthSession,
+  getAuthToken,
+  setAuthSession,
+  setAuthToken,
+} from './authToken'
 import type { ApiMessageResponse, LoginRequest, LoginResponse, UsuarioBase } from '../types'
 
 export const authService = {
   async login(payload: LoginRequest) {
     const response = await api.post<LoginResponse>('/login', payload)
-    setAuthToken(response.data.token)
+    const user = response.data.usuario
+    setAuthSession({
+      token: response.data.token,
+      tenantId: user.tenant_id,
+      tenantSlug: payload.tenant_slug,
+      userRole: String(user.role ?? user.tipo ?? ''),
+    })
     return response
   },
 
@@ -17,11 +29,16 @@ export const authService = {
     try {
       await api.post<ApiMessageResponse>('/logout')
     } finally {
-      clearAuthToken()
+      clearAuthSession()
     }
   },
 
   setToken(token: string) {
+    const current = getAuthSession()
+    if (current) {
+      setAuthSession({ ...current, token })
+      return
+    }
     setAuthToken(token)
   },
 
@@ -30,10 +47,14 @@ export const authService = {
   },
 
   clearToken() {
-    clearAuthToken()
+    clearAuthSession()
   },
 
   isAuthenticated() {
     return Boolean(getAuthToken())
+  },
+
+  getSession() {
+    return getAuthSession()
   },
 }

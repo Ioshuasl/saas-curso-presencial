@@ -3,6 +3,7 @@ import type { UsuarioBase } from './usuario'
 
 export type FeedbackFinal = {
   id: number
+  tenant_id?: number
   curso_id: number
   usuario_id: number
   nota: number
@@ -15,6 +16,7 @@ export type FeedbackFinal = {
 }
 
 export type CreateFeedbackFinalRequest = {
+  tenant_id?: number
   curso_id: number
   nota: number
   depoimento?: string

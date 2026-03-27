@@ -2,12 +2,18 @@ import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 import Curso from './Curso.js';
 import Usuario from './Usuario.js';
+import Tenant from './Tenant.js';
 
 const ContaReceber = sequelize.define('ContaReceber', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
+  },
+  tenant_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: { model: Tenant, key: 'id' },
   },
   aluno_id: {
     type: DataTypes.INTEGER,
@@ -33,6 +39,10 @@ const ContaReceber = sequelize.define('ContaReceber', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
     defaultValue: 0,
+  },
+  descricao: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
   observacao: {
     type: DataTypes.TEXT,

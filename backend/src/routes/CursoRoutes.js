@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import CursoController from '../controllers/CursoController.js';
-import { authMiddleware, adminOnly } from '../middlewares/auth.js';
+import { authMiddleware, adminOnly, optionalAuthMiddleware } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { uploadSingle } from '../middlewares/upload.js';
 import { createCursoSchema, updateCursoSchema } from '../schema/CursoSchema.js';
@@ -42,41 +42,9 @@ const routes = new Router();
  *       200:
  *         description: Lista de cursos
  */
-routes.get('/cursos', CursoController.index);
-/**
- * @swagger
- * /cursos/{id}:
- *   get:
- *     summary: Buscar curso por ID (com sessões)
- *     tags: [Cursos]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Curso encontrado
- */
-routes.get('/cursos/:id', CursoController.show);
-/**
- * @swagger
- * /cursos/{id}/vagas:
- *   get:
- *     summary: Consultar informações de vagas de um curso
- *     tags: [Cursos]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Informações de vagas
- */
-routes.get('/cursos/:id/vagas', CursoController.checkVagas);
+routes.get('/cursos', optionalAuthMiddleware, CursoController.index);
+
+// Rotas com segmento fixo DEVEM vir antes de `/cursos/:id`, senão `por-data` e `meus` viram `:id`.
 /**
  * @swagger
  * /cursos/por-data:
@@ -94,7 +62,7 @@ routes.get('/cursos/:id/vagas', CursoController.checkVagas);
  *       200:
  *         description: Lista de cursos na data informada
  */
-routes.get('/cursos/por-data', CursoController.byDate);
+routes.get('/cursos/por-data', optionalAuthMiddleware, CursoController.byDate);
 
 // Cursos do aluno logado (requer autenticação)
 /**
@@ -110,6 +78,41 @@ routes.get('/cursos/por-data', CursoController.byDate);
  *         description: Lista de cursos do aluno
  */
 routes.get('/cursos/meus', authMiddleware, CursoController.meusCursos);
+
+/**
+ * @swagger
+ * /cursos/{id}/vagas:
+ *   get:
+ *     summary: Consultar informações de vagas de um curso
+ *     tags: [Cursos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Informações de vagas
+ */
+routes.get('/cursos/:id/vagas', optionalAuthMiddleware, CursoController.checkVagas);
+/**
+ * @swagger
+ * /cursos/{id}:
+ *   get:
+ *     summary: Buscar curso por ID (com sessões)
+ *     tags: [Cursos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Curso encontrado
+ */
+routes.get('/cursos/:id', optionalAuthMiddleware, CursoController.show);
 
 // Rotas protegidas (Apenas Admins gerenciam cursos)
 /**
@@ -176,7 +179,7 @@ routes.post('/cursos', authMiddleware, adminOnly, uploadSingle('imagem'), valida
  *       200:
  *         description: Curso atualizado
  */
-routes.put('/cursos/:id', authMiddleware, adminOnly, validate(updateCursoSchema), CursoController.update);
+routes.put('/cursos/:id', authMiddleware, adminOnly, uploadSingle('imagem'), validate(updateCursoSchema), CursoController.update);
 /**
  * @swagger
  * /cursos/{id}:

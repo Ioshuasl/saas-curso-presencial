@@ -1,9 +1,11 @@
 import { Inscricao, QuestionarioInicial } from '../models/index.js';
+import { mergeTenantWhere, requireTenantId } from '../utils/tenantScope.js';
 
 class QuestionarioInicialService {
-  async upsertByAlunoECurso(aluno_id, curso_id, dados) {
+  async upsertByAlunoECurso(aluno_id, curso_id, dados, tenantId) {
+    const tid = requireTenantId(tenantId);
     const inscricao = await Inscricao.findOne({
-      where: { aluno_id, curso_id },
+      where: mergeTenantWhere(tid, { aluno_id, curso_id }),
     });
 
     if (!inscricao) {
@@ -11,7 +13,7 @@ class QuestionarioInicialService {
     }
 
     const existente = await QuestionarioInicial.findOne({
-      where: { inscricao_id: inscricao.id },
+      where: mergeTenantWhere(tid, { inscricao_id: inscricao.id }),
     });
 
     if (existente) {
@@ -24,14 +26,16 @@ class QuestionarioInicialService {
 
     return await QuestionarioInicial.create({
       inscricao_id: inscricao.id,
+      tenant_id: tid,
       maior_dor_inicio: dados.maior_dor_inicio,
       principal_expectativa: dados.principal_expectativa,
     });
   }
 
-  async findByAlunoECurso(aluno_id, curso_id) {
+  async findByAlunoECurso(aluno_id, curso_id, tenantId) {
+    const tid = requireTenantId(tenantId);
     const inscricao = await Inscricao.findOne({
-      where: { aluno_id, curso_id },
+      where: mergeTenantWhere(tid, { aluno_id, curso_id }),
     });
 
     if (!inscricao) {
@@ -39,7 +43,7 @@ class QuestionarioInicialService {
     }
 
     const questionario = await QuestionarioInicial.findOne({
-      where: { inscricao_id: inscricao.id },
+      where: mergeTenantWhere(tid, { inscricao_id: inscricao.id }),
     });
 
     if (!questionario) {
@@ -51,4 +55,3 @@ class QuestionarioInicialService {
 }
 
 export default new QuestionarioInicialService();
-

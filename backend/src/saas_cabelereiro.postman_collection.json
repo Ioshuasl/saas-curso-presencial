@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "9a1b2c3d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
 		"name": "SaaS Cabelereiro - Completo",
-		"description": "API para gestão de usuários, cursos, sessões, inscrições, questionários, feedbacks e financeiro (contas a pagar/receber).",
+		"description": "API para gestão de usuários, tenants, configurações por tenant, cursos, sessões, inscrições, questionários, feedbacks e financeiro (contas a pagar/receber).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -30,7 +30,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"identificador\": \"admin_mestre\",\n    \"senha\": \"123456\"\n}",
+							"raw": "{\n    \"identificador\": \"saas_admin\",\n    \"senha\": \"123456\",\n    \"tenant_slug\": \"barbearia-exemplo-1\"\n}",
 							"options": { "raw": { "language": "json" } }
 						},
 						"url": { "raw": "{{baseUrl}}/login", "host": ["{{baseUrl}}"], "path": ["login"] }
@@ -55,15 +55,17 @@
 			]
 		},
 		{
-			"name": "02. Usuários (Público)",
+			"name": "02. Usuários (Gestão - Admin Only)",
 			"item": [
 				{
 					"name": "Cadastrar Admin",
 					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
 						"method": "POST",
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"admin_mestre\",\n    \"email\": \"admin@teste.com\",\n    \"cpf\": \"11122233344\",\n    \"senha\": \"123456\",\n    \"nome_completo\": \"Gestor Master\"\n}",
+							"raw": "{\n    \"username\": \"admin_segundo\",\n    \"email\": \"admin2@teste.com\",\n    \"cpf\": \"11122233344\",\n    \"senha\": \"123456\",\n    \"nome_completo\": \"Segundo Administrador\"\n}",
 							"options": { "raw": { "language": "json" } }
 						},
 						"url": { "raw": "{{baseUrl}}/usuarios/admin", "host": ["{{baseUrl}}"], "path": ["usuarios", "admin"] }
@@ -72,20 +74,17 @@
 				{
 					"name": "Cadastrar Aluno",
 					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
 						"method": "POST",
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"aluno_primeiro\",\n    \"email\": \"aluno@teste.com\",\n    \"cpf\": \"55566677788\",\n    \"senha\": \"123456\",\n    \"nome_completo\": \"João do Corte\",\n    \"telefone\": \"62988887777\",\n    \"cidade\": \"Goiânia\",\n    \"profissao\": \"Barbeiro\",\n    \"biografia\": \"Especialista em degrade\"\n}",
+							"raw": "{\n    \"username\": \"aluno_novo\",\n    \"email\": \"aluno_novo@teste.com\",\n    \"cpf\": \"55566677788\",\n    \"senha\": \"123456\",\n    \"nome_completo\": \"João do Corte\",\n    \"telefone\": \"62988887777\",\n    \"cidade\": \"Goiânia\",\n    \"profissao\": \"Barbeiro\",\n    \"biografia\": \"Especialista em degrade\"\n}",
 							"options": { "raw": { "language": "json" } }
 						},
 						"url": { "raw": "{{baseUrl}}/usuarios/aluno", "host": ["{{baseUrl}}"], "path": ["usuarios", "aluno"] }
 					}
-				}
-			]
-		},
-		{
-			"name": "03. Usuários (Gestão - Admin Only)",
-			"item": [
+				},
 				{
 					"name": "Listar Admins",
 					"request": {
@@ -155,40 +154,40 @@
 			]
 		},
 		{
-			"name": "04. Cursos (Público)",
+			"name": "03. Cursos (Público)",
 			"item": [
 				{
 					"name": "Listar Cursos (com paginação e filtros)",
 					"request": {
 						"method": "GET",
-						"url": { "raw": "{{baseUrl}}/cursos?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["cursos"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "nome", "value": "", "disabled": true }, { "key": "status", "value": "true", "disabled": true }, { "key": "sort", "value": "id" }, { "key": "order", "value": "DESC" }] }
+						"url": { "raw": "{{baseUrl}}/cursos?page=1&limit=10&tenant_slug=barbearia-exemplo-1", "host": ["{{baseUrl}}"], "path": ["cursos"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "tenant_slug", "value": "barbearia-exemplo-1" }, { "key": "nome", "value": "", "disabled": true }, { "key": "status", "value": "true", "disabled": true }, { "key": "sort", "value": "id" }, { "key": "order", "value": "DESC" }] }
 					}
 				},
 				{
 					"name": "Cursos por Data de Sessão",
 					"request": {
 						"method": "GET",
-						"url": { "raw": "{{baseUrl}}/cursos/por-data?data=2026-05-10", "host": ["{{baseUrl}}"], "path": ["cursos", "por-data"], "query": [{ "key": "data", "value": "2026-05-10" }] }
+						"url": { "raw": "{{baseUrl}}/cursos/por-data?data=2026-05-10&tenant_slug=barbearia-exemplo-1", "host": ["{{baseUrl}}"], "path": ["cursos", "por-data"], "query": [{ "key": "data", "value": "2026-05-10" }, { "key": "tenant_slug", "value": "barbearia-exemplo-1" }] }
 					}
 				},
 				{
 					"name": "Detalhes do Curso (ID)",
 					"request": {
 						"method": "GET",
-						"url": { "raw": "{{baseUrl}}/cursos/1", "host": ["{{baseUrl}}"], "path": ["cursos", "1"] }
+						"url": { "raw": "{{baseUrl}}/cursos/1?tenant_slug=barbearia-exemplo-1", "host": ["{{baseUrl}}"], "path": ["cursos", "1"], "query": [{ "key": "tenant_slug", "value": "barbearia-exemplo-1" }] }
 					}
 				},
 				{
 					"name": "Consultar Vagas",
 					"request": {
 						"method": "GET",
-						"url": { "raw": "{{baseUrl}}/cursos/1/vagas", "host": ["{{baseUrl}}"], "path": ["cursos", "1", "vagas"] }
+						"url": { "raw": "{{baseUrl}}/cursos/1/vagas?tenant_slug=barbearia-exemplo-1", "host": ["{{baseUrl}}"], "path": ["cursos", "1", "vagas"], "query": [{ "key": "tenant_slug", "value": "barbearia-exemplo-1" }] }
 					}
 				}
 			]
 		},
 		{
-			"name": "05. Cursos (Autenticado)",
+			"name": "04. Cursos (Autenticado)",
 			"item": [
 				{
 					"name": "Meus Cursos (do aluno logado)",
@@ -201,7 +200,7 @@
 			]
 		},
 		{
-			"name": "06. Cursos (Admin Only)",
+			"name": "05. Cursos (Admin Only)",
 			"item": [
 				{
 					"name": "Criar Curso com Sessões",
@@ -210,7 +209,7 @@
 						"method": "POST",
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"nome\": \"Workshop de Cortes Modernos\",\n    \"ministrante\": \"Professor Hair\",\n    \"descricao\": \"Aprenda as tendências de 2026\",\n    \"valor\": 250.00,\n    \"vagas\": 20,\n    \"local\": \"Auditório Central\",\n    \"sessoes\": [\n        {\n            \"data\": \"2026-05-10\",\n            \"horario_inicio\": \"08:00:00\",\n            \"horario_fim\": \"12:00:00\"\n        },\n        {\n            \"data\": \"2026-05-11\",\n            \"horario_inicio\": \"08:00:00\",\n            \"horario_fim\": \"12:00:00\"\n        }\n    ]\n}",
+							"raw": "{\n    \"tenant_slug\": \"barbearia-exemplo-1\",\n    \"nome\": \"Workshop de Cortes Modernos\",\n    \"ministrante\": \"Professor Hair\",\n    \"descricao\": \"Aprenda as tendências de 2026\",\n    \"valor\": 250.00,\n    \"vagas\": 20,\n    \"local\": \"Auditório Central\",\n    \"sessoes\": [\n        {\n            \"data\": \"2026-05-10\",\n            \"horario_inicio\": \"08:00:00\",\n            \"horario_fim\": \"12:00:00\"\n        },\n        {\n            \"data\": \"2026-05-11\",\n            \"horario_inicio\": \"08:00:00\",\n            \"horario_fim\": \"12:00:00\"\n        }\n    ]\n}",
 							"options": { "raw": { "language": "json" } }
 						},
 						"url": { "raw": "{{baseUrl}}/cursos", "host": ["{{baseUrl}}"], "path": ["cursos"] }
@@ -295,7 +294,7 @@
 			]
 		},
 		{
-			"name": "08. Questionário Inicial (Autenticado)",
+			"name": "07. Questionário Inicial (Autenticado)",
 			"item": [
 				{
 					"name": "Responder Questionário Inicial",
@@ -347,7 +346,7 @@
 			]
 		},
 		{
-			"name": "10. Contas a Pagar (Admin Only)",
+			"name": "09. Contas a Pagar (Admin Only)",
 			"item": [
 				{
 					"name": "Listar Contas a Pagar",
@@ -372,7 +371,7 @@
 						"method": "POST",
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"descricao\": \"Material de consumo\",\n    \"categoria\": \"Material\",\n    \"valor\": 500.00,\n    \"data_vencimento\": \"2026-06-15\",\n    \"status\": \"PENDENTE\",\n    \"curso_id\": 1,\n    \"observacao\": \"Comprar tesouras\"\n}",
+							"raw": "{\n    \"tenant_slug\": \"barbearia-exemplo-1\",\n    \"descricao\": \"Material de consumo\",\n    \"categoria\": \"Material\",\n    \"valor\": 500.00,\n    \"data_vencimento\": \"2026-06-15\",\n    \"status\": \"PENDENTE\",\n    \"curso_id\": 1,\n    \"observacao\": \"Comprar tesouras\"\n}",
 							"options": { "raw": { "language": "json" } }
 						},
 						"url": { "raw": "{{baseUrl}}/contas-pagar", "host": ["{{baseUrl}}"], "path": ["contas-pagar"] }
@@ -402,7 +401,7 @@
 			]
 		},
 		{
-			"name": "11. Contas a Receber (Admin Only)",
+			"name": "10. Contas a Receber (Admin Only)",
 			"item": [
 				{
 					"name": "Listar Contas a Receber",
@@ -427,7 +426,7 @@
 						"method": "POST",
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"aluno_id\": 1,\n    \"curso_id\": 1,\n    \"forma_pagamento\": \"PIX\",\n    \"valor_total\": 500.00,\n    \"observacao\": \"Matrícula curso X\",\n    \"parcelas\": [\n        { \"numero_parcela\": 1, \"valor\": 250.00, \"data_vencimento\": \"2026-05-01\" },\n        { \"numero_parcela\": 2, \"valor\": 250.00, \"data_vencimento\": \"2026-06-01\" }\n    ]\n}",
+							"raw": "{\n    \"tenant_slug\": \"barbearia-exemplo-1\",\n    \"aluno_id\": 1,\n    \"curso_id\": 1,\n    \"forma_pagamento\": \"PIX\",\n    \"valor_total\": 500.00,\n    \"observacao\": \"Matrícula curso X\",\n    \"parcelas\": [\n        { \"numero_parcela\": 1, \"valor\": 250.00, \"data_vencimento\": \"2026-05-01\" },\n        { \"numero_parcela\": 2, \"valor\": 250.00, \"data_vencimento\": \"2026-06-01\" }\n    ]\n}",
 							"options": { "raw": { "language": "json" } }
 						},
 						"url": { "raw": "{{baseUrl}}/contas-receber", "host": ["{{baseUrl}}"], "path": ["contas-receber"] }
@@ -468,10 +467,120 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "11. Tenants e Config (Admin Only)",
+			"item": [
+				{
+					"name": "Criar Tenant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const r = pm.response.json();",
+									"if (r && r.id) {",
+									"    pm.collectionVariables.set('tenantId', String(r.id));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Barbearia Exemplo 3\",\n    \"slug\": \"barbearia-exemplo-3\",\n    \"ativo\": true\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/tenants", "host": ["{{baseUrl}}"], "path": ["tenants"] }
+					}
+				},
+				{
+					"name": "Listar Tenants",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/tenants?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["tenants"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" },
+								{ "key": "nome", "value": "", "disabled": true },
+								{ "key": "ativo", "value": "true", "disabled": true },
+								{ "key": "sort", "value": "id" },
+								{ "key": "order", "value": "DESC" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar Tenant por ID",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/tenants/{{tenantId}}", "host": ["{{baseUrl}}"], "path": ["tenants", "{{tenantId}}"] }
+					}
+				},
+				{
+					"name": "Atualizar Tenant",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Barbearia Exemplo Atualizada\",\n    \"ativo\": true\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/tenants/{{tenantId}}", "host": ["{{baseUrl}}"], "path": ["tenants", "{{tenantId}}"] }
+					}
+				},
+				{
+					"name": "Excluir Tenant",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "DELETE",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/tenants/{{tenantId}}", "host": ["{{baseUrl}}"], "path": ["tenants", "{{tenantId}}"] }
+					}
+				},
+				{
+					"name": "Buscar Config do Tenant",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/tenants/{{tenantId}}/config", "host": ["{{baseUrl}}"], "path": ["tenants", "{{tenantId}}", "config"] }
+					}
+				},
+				{
+					"name": "Atualizar Config do Tenant (PATCH)",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"settings\": {\n        \"tema\": \"escuro\",\n        \"nome_exibicao\": \"Minha unidade\"\n    }\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/tenants/{{tenantId}}/config", "host": ["{{baseUrl}}"], "path": ["tenants", "{{tenantId}}", "config"] }
+					}
+				}
+			]
 		}
 	],
 	"variable": [
 		{ "key": "baseUrl", "value": "http://localhost:3000/api", "type": "string" },
-		{ "key": "token", "value": "", "type": "string" }
+		{ "key": "token", "value": "", "type": "string" },
+		{ "key": "tenantId", "value": "1", "type": "string" }
 	]
 }

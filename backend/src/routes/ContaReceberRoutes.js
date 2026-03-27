@@ -10,6 +10,23 @@ import {
 
 const routes = new Router();
 
+function preventTenantOverride(req, res, next) {
+  const requestedTenantId = req.query?.tenant_id ?? req.body?.tenant_id;
+  const requestedTenantSlug = req.query?.tenant_slug ?? req.body?.tenant_slug;
+
+  if (
+    (requestedTenantId != null && String(requestedTenantId).trim() !== '') ||
+    (requestedTenantSlug != null && String(requestedTenantSlug).trim() !== '')
+  ) {
+    return res.status(403).json({
+      error:
+        'Nao e permitido informar tenant_id/tenant_slug nesta rota. O tenant vem do token autenticado.',
+    });
+  }
+
+  return next();
+}
+
 /**
  * @swagger
  * tags:
@@ -19,6 +36,7 @@ const routes = new Router();
 
 // Todas as rotas de financeiro são restritas a administradores
 routes.use(authMiddleware, adminOnly);
+routes.use(preventTenantOverride);
 
 /**
  * @swagger

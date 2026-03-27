@@ -38,7 +38,7 @@ export function HomePage({ role }: HomePageProps) {
   const cards = role === 'admin' ? adminCards : studentCards
 
   return (
-    <section className="space-y-6">
+    <section className="scrollbar-hide flex h-full min-h-0 flex-1 flex-col space-y-6 overflow-y-auto">
       <div>
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white md:text-3xl">
           {role === 'admin' ? 'Painel do Administrador' : 'Painel do Aluno'}

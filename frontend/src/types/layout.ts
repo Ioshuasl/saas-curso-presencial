@@ -1,6 +1,7 @@
-export type UserRole = 'admin' | 'student'
+export type UserRole = 'admin' | 'student' | 'saas_admin'
 
 export type SidebarMenuItem = {
+  tenant_id?: number
   id: string
   label: string
   path: string

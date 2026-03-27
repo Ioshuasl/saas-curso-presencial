@@ -1,4 +1,5 @@
 import { api } from './api'
+import { stripTenantScope } from './tenantScope'
 import type {
   ApiMessageResponse,
   ContaReceber,
@@ -11,7 +12,9 @@ import type {
 
 export const contaReceberService = {
   listarContasReceber(params?: ContaReceberListQuery) {
-    return api.get<ContaReceberListResponse>('/contas-receber', { params })
+    return api.get<ContaReceberListResponse>('/contas-receber', {
+      params: params ? stripTenantScope(params) : undefined,
+    })
   },
 
   buscarContaReceberPorId(id: number) {
@@ -19,11 +22,11 @@ export const contaReceberService = {
   },
 
   criarContaReceber(payload: CreateContaReceberRequest) {
-    return api.post<ContaReceber>('/contas-receber', payload)
+    return api.post<ContaReceber>('/contas-receber', stripTenantScope(payload))
   },
 
   atualizarContaReceber(id: number, payload: UpdateContaReceberRequest) {
-    return api.put<ContaReceber>(`/contas-receber/${id}`, payload)
+    return api.put<ContaReceber>(`/contas-receber/${id}`, stripTenantScope(payload))
   },
 
   deletarContaReceber(id: number) {

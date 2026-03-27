@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  tenantContextFields,
+  refineHasTenantContext,
+} from './TenantContextSchema.js';
 
 const parcelaSchema = z.object({
   numero_parcela: z.coerce.number().int('Número da parcela deve ser inteiro').positive('Número da parcela inválido'),
@@ -18,17 +22,24 @@ const contaReceberBase = {
   curso_id: z.coerce.number().int('ID do curso deve ser inteiro').positive('ID do curso inválido'),
   forma_pagamento: z.enum(['PIX', 'CARTAO_CREDITO', 'CARTAO_DEBITO']),
   valor_total: z.coerce.number().positive('Valor total deve ser maior que zero'),
+  descricao: z.string().min(3, 'Descrição muito curta').optional(),
   observacao: z.string().optional(),
   parcelas: z.array(parcelaSchema).min(1, 'Informe ao menos uma parcela'),
 };
 
-export const createContaReceberSchema = z.object({
-  ...contaReceberBase,
-});
+export const createContaReceberSchema = z
+  .object({
+    ...contaReceberBase,
+    ...tenantContextFields,
+  })
+  .superRefine(refineHasTenantContext);
 
-export const updateContaReceberSchema = z.object({
-  ...contaReceberBase,
-}).partial();
+export const updateContaReceberSchema = z
+  .object({
+    ...contaReceberBase,
+    ...tenantContextFields,
+  })
+  .partial();
 
 export const marcarParcelaPagaSchema = z.object({
   data_pagamento: z

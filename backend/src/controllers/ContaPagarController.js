@@ -1,56 +1,65 @@
 import ContaPagarService from '../services/ContaPagarService.js';
+import { resolveTenantIdForAdminRequest } from '../utils/tenantAdminContext.js';
+
+function resolveErrorStatus(error, fallbackStatus) {
+  if (error?.message === 'tenantId não disponível no contexto autenticado') {
+    return 401;
+  }
+  return fallbackStatus;
+}
 
 class ContaPagarController {
-  // --- CRIAR CONTA A PAGAR ---
   async store(req, res) {
     try {
-      const conta = await ContaPagarService.create(req.body);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      const conta = await ContaPagarService.create(tenantId, req.body);
       return res.status(201).json(conta);
     } catch (e) {
-      return res.status(400).json({ error: e.message });
+      return res.status(resolveErrorStatus(e, 400)).json({ error: e.message });
     }
   }
 
-  // --- LISTAR CONTAS A PAGAR (com filtros e paginação) ---
   async index(req, res) {
     try {
-      const resultado = await ContaPagarService.findAll(req.query);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      const resultado = await ContaPagarService.findAll(tenantId, req.query);
       return res.json(resultado);
     } catch (e) {
-      return res.status(500).json({ error: 'Erro ao buscar contas a pagar' });
+      return res
+        .status(resolveErrorStatus(e, 500))
+        .json({ error: e?.message || 'Erro ao buscar contas a pagar' });
     }
   }
 
-  // --- BUSCAR CONTA A PAGAR POR ID ---
   async show(req, res) {
     try {
-      const conta = await ContaPagarService.findById(req.params.id);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      const conta = await ContaPagarService.findById(req.params.id, tenantId);
       return res.json(conta);
     } catch (e) {
-      return res.status(404).json({ error: e.message });
+      return res.status(resolveErrorStatus(e, 404)).json({ error: e.message });
     }
   }
 
-  // --- ATUALIZAR CONTA A PAGAR ---
   async update(req, res) {
     try {
-      const conta = await ContaPagarService.update(req.params.id, req.body);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      const conta = await ContaPagarService.update(req.params.id, tenantId, req.body);
       return res.json(conta);
     } catch (e) {
-      return res.status(400).json({ error: e.message });
+      return res.status(resolveErrorStatus(e, 400)).json({ error: e.message });
     }
   }
 
-  // --- EXCLUIR CONTA A PAGAR ---
   async delete(req, res) {
     try {
-      await ContaPagarService.delete(req.params.id);
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      await ContaPagarService.delete(req.params.id, tenantId);
       return res.status(204).send();
     } catch (e) {
-      return res.status(400).json({ error: e.message });
+      return res.status(resolveErrorStatus(e, 400)).json({ error: e.message });
     }
   }
 }
 
 export default new ContaPagarController();
-

@@ -3,6 +3,7 @@ import type { UsuarioBase } from './usuario'
 
 export type QuestionarioInicial = {
   id: number
+  tenant_id?: number
   curso_id: number
   usuario_id: number
   dores?: string | null
@@ -15,6 +16,7 @@ export type QuestionarioInicial = {
 }
 
 export type CreateQuestionarioInicialRequest = {
+  tenant_id?: number
   curso_id: number
   dores?: string
   expectativas?: string
