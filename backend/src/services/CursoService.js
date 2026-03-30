@@ -121,7 +121,7 @@ class CursoService {
 
   async findBySessionDate(data, tenantId) {
     const tid = requireTenantId(tenantId);
-    return await Curso.findAll({
+    const rows = await Curso.findAll({
       where: whereTenantOnly(tid),
       include: [
         {
@@ -133,6 +133,35 @@ class CursoService {
       ],
       order: [['id', 'DESC']],
     });
+
+    // Total de inscrições por curso (para exibir na agenda).
+    // Mantemos o mesmo nome de campo já usado em outras telas (`vagas_preenchidas`)
+    // porque a UI já sabe lidar com esse padrão.
+    const cursoIds = rows.map((c) => Number(c?.id)).filter((id) => Number.isInteger(id));
+    if (cursoIds.length) {
+      const inscricoesPorCurso = await Inscricao.findAll({
+        where: mergeTenantWhere(tid, { curso_id: { [Op.in]: cursoIds } }),
+        attributes: [
+          'curso_id',
+          [sequelize.fn('COUNT', sequelize.col('id')), 'vagas_preenchidas'],
+        ],
+        group: ['curso_id'],
+        raw: true,
+      });
+
+      const vagasByCursoId = new Map(
+        inscricoesPorCurso.map((item) => [Number(item.curso_id), Number(item.vagas_preenchidas) || 0]),
+      );
+
+      rows.forEach((curso) => {
+        curso.setDataValue(
+          'vagas_preenchidas',
+          vagasByCursoId.get(Number(curso.id)) ?? 0,
+        );
+      });
+    }
+
+    return rows;
   }
 
   async findById(id, tenantId) {

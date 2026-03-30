@@ -1,3 +1,5 @@
+import type { Config } from './config'
+
 export type Tenant = {
   id: number
   nome: string
@@ -39,16 +41,3 @@ export type TenantListResponse = {
     por_pagina: number
   }
 }
-
-export type Config = {
-  id: number
-  tenant_id: number
-  settings: Record<string, unknown>
-  created_at?: string
-  updated_at?: string
-}
-
-export type UpdateConfigRequest = {
-  settings?: Record<string, unknown>
-} & Record<string, unknown>
-

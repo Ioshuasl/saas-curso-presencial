@@ -12,6 +12,7 @@ import {
   FinanceiroPage,
   HomePage,
   LoginPage,
+  TenantConfigPage,
   TenantsPage,
 } from './pages'
 import { authService, usuarioService } from './services'
@@ -181,7 +182,7 @@ function App() {
             <Route path="/cursos" element={<AdminCursoPage />} />
             <Route path="/alunos" element={<AlunosPage />} />
             <Route path="/financeiro" element={<FinanceiroPage />} />
-            <Route path="/configuracoes" element={<HomePage role={currentRole} />} />
+            <Route path="/configuracoes" element={<TenantConfigPage />} />
             <Route
               path="*"
               element={<Navigate to={`/dashboard${tenantSearch}`} replace />}

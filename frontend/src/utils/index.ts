@@ -2,3 +2,5 @@
 export { cn } from "./cn";
 export { resolveTenantSlug, resolveTenantSlugFromBrowser } from './tenant'
 export { resolveTenantNavigationAction } from './tenantSessionFlow'
+export { consultarCepViaReceitaWs } from './cepReceitaWs'
+export { consultarCnpjViaBrasilApi } from './cnpjBrasilApi'

@@ -11,6 +11,7 @@ import contaPagarRoutes from './ContaPagarRoutes.js';
 import contaReceberRoutes from './ContaReceberRoutes.js';
 import financeiroRoutes from './FinanceiroRoutes.js';
 import uploadRoutes from './UploadRoutes.js';
+import configRoutes from './ConfigRoutes.js';
 import tenantRoutes from './TenantRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -21,6 +22,7 @@ const routes = new Router();
 // GET /api/uploads/:filename — servir arquivos enviados
 routes.use('/uploads', express.static(uploadsPath));
 routes.use('/uploads', uploadRoutes);
+routes.use(configRoutes);
 routes.use(tenantRoutes);
 routes.use(usuarioRoutes);
 routes.use(cursoRoutes);
