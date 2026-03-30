@@ -6,17 +6,50 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const bucketName = process.env.AWS_BUCKET_NAME;
+const region = process.env.AWS_REGION || 'us-east-1';
 
 aws.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
+  region,
 });
 
 export const s3 = new aws.S3();
 
 /**
- * Indica se a URL aponta para o bucket S3 configurado (virtual-hosted, path-style ou presignada).
+ * URLs públicas fixas (sem expiração). A leitura pública vem da política do bucket (s3:GetObject),
+ * não de ACL no objeto — compatível com "Object ownership: Bucket owner enforced" (ACLs desativadas).
+ * Não envie ACL no PutObject nesse modo.
+ */
+
+/**
+ * URL pública fixa (virtual-hosted-style), sem query de assinatura e sem expiração.
+ * @param {string} key - Key do objeto no bucket
+ */
+export function getPublicObjectUrl(key) {
+  if (!key) {
+    throw new Error('key é obrigatória para montar a URL pública.');
+  }
+  if (!bucketName) {
+    throw new Error('AWS_BUCKET_NAME não configurado.');
+  }
+  const encodedKey = String(key)
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+  return `https://${bucketName}.s3.${region}.amazonaws.com/${encodedKey}`;
+}
+
+/**
+ * Compatível com código que chamava URL assinada: agora retorna a mesma URL pública fixa.
+ * @param {string} objectName - Key do objeto
+ */
+export function getDownloadUrl(objectName) {
+  return getPublicObjectUrl(objectName);
+}
+
+/**
+ * Indica se a URL aponta para o bucket S3 configurado (virtual-hosted, path-style ou query antiga).
  */
 export function isOurBucketUrl(fileUrl) {
   if (!fileUrl || typeof fileUrl !== 'string') return false;
@@ -37,7 +70,7 @@ export function isOurBucketUrl(fileUrl) {
 }
 
 /**
- * Extrai a Key do objeto a partir de URL S3 (incl. presignada) ou path "community/...".
+ * Extrai a Key do objeto a partir de URL S3 (pública ou path "community/...").
  */
 export function getKeyFromUrl(fileUrl) {
   if (!fileUrl || typeof fileUrl !== 'string') return null;
@@ -99,10 +132,7 @@ export async function uploadToS3(file, folder) {
   };
 
   await s3.upload(params).promise();
-  const url = s3.getSignedUrl('getObject', {
-    Bucket: bucketName,
-    Key: key,
-  });
+  const url = getPublicObjectUrl(key);
   return { key, url };
 }
 
@@ -129,18 +159,8 @@ export async function uploadFile(filePath, objectName, contentType) {
   } finally {
     stream.destroy();
   }
-  const url = getDownloadUrl(finalObjectName);
+  const url = getPublicObjectUrl(finalObjectName);
   return { objectName: finalObjectName, url };
-}
-
-export function getDownloadUrl(objectName) {
-  if (!objectName) {
-    throw new Error('objectName é obrigatório para gerar URL de download.');
-  }
-  return s3.getSignedUrl('getObject', {
-    Bucket: bucketName,
-    Key: objectName,
-  });
 }
 
 export async function deleteFromS3(fileUrl) {
