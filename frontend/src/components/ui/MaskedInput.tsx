@@ -7,7 +7,7 @@ type MaskType = 'cpf' | 'cnpj' | 'cep' | 'phone' | 'currency' | 'none';
 
 interface MaskedInputProps extends Omit<InputProps, 'value' | 'onChange'> {
   maskType?: MaskType;
-  value?: string | number;
+  value?: string | number | null;
   onAccept?: (value: string, unmaskedValue: string) => void;
   customMask?: Record<string, unknown>;
 }
@@ -69,7 +69,7 @@ export const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         <IMaskInput
           {...maskConfig}
           {...props}
-          value={value?.toString() || ''}
+          value={value === null || value === undefined ? '' : String(value)}
           unmask={true}
           inputRef={ref}
           disabled={disabled}

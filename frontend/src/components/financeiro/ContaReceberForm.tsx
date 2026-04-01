@@ -10,6 +10,7 @@ import type {
 } from '../../types'
 import { cursoService, usuarioService } from '../../services'
 import { Button } from '../ui/Button'
+import { CurrencyInput } from '../ui/CurrencyInput'
 import { Checkbox } from '../ui/Checkbox'
 import { DatePicker } from '../ui/DatePicker'
 import { Input } from '../ui/Input'
@@ -27,7 +28,7 @@ type ContaReceberFormProps = {
 type ParcelaState = {
   id?: number
   numeroParcela: string
-  valor: string
+  valor: number | null
   dataVencimento: Date | null
   pago?: boolean
   dataPagamento?: string | null
@@ -39,7 +40,7 @@ type FormState = {
   formaPagamento: 'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO'
   descricao: string
   observacao: string
-  valorTotal: string
+  valorTotal: number | null
   parcelas: ParcelaState[]
 }
 
@@ -73,9 +74,9 @@ const initialState: FormState = {
   formaPagamento: 'PIX',
   descricao: '',
   observacao: '',
-  valorTotal: '',
+  valorTotal: null,
   parcelas: [
-    { numeroParcela: '1', valor: '', dataVencimento: null, pago: false, dataPagamento: null },
+    { numeroParcela: '1', valor: null, dataVencimento: null, pago: false, dataPagamento: null },
   ],
 }
 
@@ -117,19 +118,19 @@ export function ContaReceberForm({
           : 'PIX',
       descricao: selectedContaReceber.descricao ?? '',
       observacao: selectedContaReceber.observacao ?? '',
-      valorTotal: String(selectedContaReceber.valor_total ?? 0),
+      valorTotal: Number(selectedContaReceber.valor_total ?? 0),
       parcelas:
         selectedContaReceber.parcelas?.length
           ? selectedContaReceber.parcelas.map((p, idx) => ({
               id: p.id,
               numeroParcela:
                 p.numero_parcela != null ? String(p.numero_parcela) : p.numero != null ? String(p.numero) : String(idx + 1),
-              valor: p.valor != null ? String(p.valor) : '',
+              valor: p.valor != null ? Number(p.valor) : null,
               dataVencimento: parseDateValue(p.data_vencimento),
               pago: Boolean(p.pago),
               dataPagamento: p.data_pagamento ?? null,
             }))
-          : [{ numeroParcela: '1', valor: '', dataVencimento: null, pago: false, dataPagamento: null }],
+          : [{ numeroParcela: '1', valor: null, dataVencimento: null, pago: false, dataPagamento: null }],
     })
   }, [selectedContaReceber])
 
@@ -204,7 +205,7 @@ export function ContaReceberForm({
         ...prev.parcelas,
         {
           numeroParcela: String(prev.parcelas.length + 1),
-          valor: '',
+          valor: null,
           dataVencimento: null,
           pago: false,
           dataPagamento: null,
@@ -232,7 +233,6 @@ export function ContaReceberForm({
 
     const alunoId = Number(form.alunoId)
     const cursoId = Number(form.cursoId)
-    const valorTotal = Number(form.valorTotal)
 
     if (!Number.isFinite(alunoId) || alunoId <= 0) {
       window.alert('Informe um `aluno_id` valido.')
@@ -242,6 +242,11 @@ export function ContaReceberForm({
       window.alert('Informe um `curso_id` valido.')
       return
     }
+    if (form.valorTotal === null) {
+      window.alert('Informe o valor total.')
+      return
+    }
+    const valorTotal = form.valorTotal
     if (!Number.isFinite(valorTotal) || valorTotal <= 0) {
       window.alert('Valor total deve ser maior que zero.')
       return
@@ -251,7 +256,6 @@ export function ContaReceberForm({
     for (let i = 0; i < form.parcelas.length; i++) {
       const p = form.parcelas[i]
       const numeroParcela = Number(p.numeroParcela)
-      const valor = Number(p.valor)
       if (!p.dataVencimento) {
         window.alert(`Selecione a data de vencimento da parcela ${i + 1}.`)
         return
@@ -260,6 +264,11 @@ export function ContaReceberForm({
         window.alert(`Numero da parcela ${i + 1} deve ser maior que zero.`)
         return
       }
+      if (p.valor === null) {
+        window.alert(`Informe o valor da parcela ${i + 1}.`)
+        return
+      }
+      const valor = p.valor
       if (!Number.isFinite(valor) || valor <= 0) {
         window.alert(`Valor da parcela ${i + 1} deve ser maior que zero.`)
         return
@@ -389,13 +398,10 @@ export function ContaReceberForm({
                 options={formaPagamentoOptions}
               />
 
-              <Input
+              <CurrencyInput
                 label="Valor total"
-                type="number"
-                step="0.01"
                 value={form.valorTotal}
-                onChange={(event) => setForm((prev) => ({ ...prev, valorTotal: event.target.value }))}
-                required
+                onChange={(next) => setForm((prev) => ({ ...prev, valorTotal: next }))}
               />
 
               <Textarea
@@ -445,13 +451,10 @@ export function ContaReceberForm({
                         }
                         required
                       />
-                      <Input
+                      <CurrencyInput
                         label="Valor"
-                        type="number"
-                        step="0.01"
                         value={parcela.valor}
-                        onChange={(event) => updateParcela(index, { valor: event.target.value })}
-                        required
+                        onChange={(next) => updateParcela(index, { valor: next })}
                       />
                     </div>
 

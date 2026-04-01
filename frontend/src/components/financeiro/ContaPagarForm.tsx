@@ -9,6 +9,7 @@ import type {
 } from '../../types'
 import { cursoService } from '../../services'
 import { Button } from '../ui/Button'
+import { CurrencyInput } from '../ui/CurrencyInput'
 import { DatePicker } from '../ui/DatePicker'
 import { Input } from '../ui/Input'
 import { RadioGroup } from '../ui/RadioGroup'
@@ -26,7 +27,7 @@ type ContaPagarFormProps = {
 type FormState = {
   cursoId: string
   descricao: string
-  valor: string
+  valor: number | null
   categoria: string
   dataVencimento: Date | null
   dataPagamento: Date | null
@@ -60,7 +61,7 @@ function coerceStatus(status: unknown): FormState['status'] {
 const initialState: FormState = {
   cursoId: '',
   descricao: '',
-  valor: '',
+  valor: null,
   categoria: '',
   dataVencimento: null,
   dataPagamento: null,
@@ -99,7 +100,7 @@ export function ContaPagarForm({
     setForm({
       cursoId: selectedContaPagar.curso_id != null ? String(selectedContaPagar.curso_id) : '',
       descricao: selectedContaPagar.descricao ?? '',
-      valor: String(selectedContaPagar.valor ?? 0),
+      valor: Number(selectedContaPagar.valor ?? 0),
       categoria: selectedContaPagar.categoria ?? '',
       dataVencimento: parseDateValue(selectedContaPagar.data_vencimento),
       dataPagamento: parseDateValue(selectedContaPagar.data_pagamento),
@@ -169,7 +170,11 @@ export function ContaPagarForm({
       return
     }
 
-    const valor = Number(form.valor || 0)
+    if (form.valor === null) {
+      window.alert('Informe o valor.')
+      return
+    }
+    const valor = form.valor
     if (!Number.isFinite(valor) || valor <= 0) {
       window.alert('Valor deve ser maior que zero.')
       return
@@ -259,14 +264,10 @@ export function ContaPagarForm({
                 disabled={isLoadingCursos}
               />
 
-              <Input
+              <CurrencyInput
                 label="Valor"
-                type="number"
-                step="0.01"
                 value={form.valor}
-                onChange={(event) => setForm((prev) => ({ ...prev, valor: event.target.value }))}
-                startIcon={<CircleDollarSign size={16} />}
-                required
+                onChange={(next) => setForm((prev) => ({ ...prev, valor: next }))}
               />
 
               <Input

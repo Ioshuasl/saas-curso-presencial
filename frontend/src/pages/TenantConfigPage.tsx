@@ -1,70 +1,21 @@
-import { Building2, FileKey2, ShieldCheck, UserRound } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { ImagePicker } from '../components/ui/ImagePicker'
-import { Button } from '../components/ui/Button'
-import { Input } from '../components/ui/Input'
-import { MaskedInput } from '../components/ui/MaskedInput'
+import {
+  asRecord,
+  initialGeral,
+  initialSeguranca,
+  TenantConfigLoading,
+  TenantConfigSidebar,
+  TenantGeralTab,
+  TenantSegurancaTab,
+  type ConfigTab,
+  type GeralForm,
+  type SegurancaForm,
+} from '../components/tenantConfig'
 import { authService, configService, tenantService, uploadService } from '../services'
 import type { ConfigSettingsObject } from '../types'
-import { cn, consultarCepViaReceitaWs, consultarCnpjViaBrasilApi } from '../utils'
-
-type ConfigTab = 'geral' | 'seguranca'
-type PessoaTipo = 'PF' | 'PJ'
-
-type GeralForm = {
-  tipoPessoa: PessoaTipo
-  logoUrl: string
-  logoKey: string
-  pfNome: string
-  pfCpf: string
-  pjRazaoSocial: string
-  pjNomeFantasia: string
-  pjCnpj: string
-  pjRepresentanteNome: string
-  pjRepresentanteCpf: string
-  cep: string
-  endereco: string
-  bairro: string
-  cidade: string
-  estado: string
-}
-
-type SegurancaForm = {
-  certificadoA1Url: string
-  certificadoA1Key: string
-  certificadoSenha: string
-}
-
-const initialGeral: GeralForm = {
-  tipoPessoa: 'PF',
-  logoUrl: '',
-  logoKey: '',
-  pfNome: '',
-  pfCpf: '',
-  pjRazaoSocial: '',
-  pjNomeFantasia: '',
-  pjCnpj: '',
-  pjRepresentanteNome: '',
-  pjRepresentanteCpf: '',
-  cep: '',
-  endereco: '',
-  bairro: '',
-  cidade: '',
-  estado: '',
-}
-
-const initialSeguranca: SegurancaForm = {
-  certificadoA1Url: '',
-  certificadoA1Key: '',
-  certificadoSenha: '',
-}
-
-function asRecord(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
-  return value as Record<string, unknown>
-}
+import { consultarCepViaReceitaWs, consultarCnpjViaBrasilApi } from '../utils'
 
 export function TenantConfigPage() {
   const [tab, setTab] = useState<ConfigTab>('geral')
@@ -127,6 +78,8 @@ export function TenantConfigPage() {
           pjCnpj: String(tenantProfile.pjCnpj ?? ''),
           pjRepresentanteNome: String(tenantProfile.pjRepresentanteNome ?? ''),
           pjRepresentanteCpf: String(tenantProfile.pjRepresentanteCpf ?? ''),
+          email: String(tenantProfile.email ?? ''),
+          telefone: String(tenantProfile.telefone ?? ''),
           cep: String(address.cep ?? ''),
           endereco: String(address.endereco ?? ''),
           bairro: String(address.bairro ?? ''),
@@ -196,6 +149,8 @@ export function TenantConfigPage() {
         pjCnpj: geral.pjCnpj,
         pjRepresentanteNome: geral.pjRepresentanteNome,
         pjRepresentanteCpf: geral.pjRepresentanteCpf,
+        email: geral.email.trim(),
+        telefone: geral.telefone.trim(),
         endereco: {
           cep: geral.cep,
           endereco: geral.endereco,
@@ -311,257 +266,45 @@ export function TenantConfigPage() {
   }
 
   if (isLoading) {
-    return (
-      <section className="flex h-full min-h-0 flex-1 items-center justify-center">
-        <p className="text-sm text-slate-500 dark:text-slate-400">Carregando configurações...</p>
-      </section>
-    )
+    return <TenantConfigLoading />
   }
 
   return (
     <section className="scrollbar-hide flex h-full min-h-0 flex-1 flex-col overflow-y-auto">
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 lg:h-fit">
-          <p className="px-2 pb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
-            Configurações
-          </p>
-          <div className="grid gap-1">
-            <button
-              type="button"
-              onClick={() => setTab('geral')}
-              className={cn(
-                'flex items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition',
-                tab === 'geral'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
-              )}
-            >
-              <Building2 size={16} />
-              Dados gerais do tenant
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab('seguranca')}
-              className={cn(
-                'flex items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition',
-                tab === 'seguranca'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
-              )}
-            >
-              <ShieldCheck size={16} />
-              Segurança
-            </button>
-          </div>
-        </aside>
+        <TenantConfigSidebar activeTab={tab} onTabChange={setTab} />
 
         <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 md:p-6">
           {tab === 'geral' ? (
-            <div className="space-y-5">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Dados gerais</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Configure identificação, documento e endereço do tenant.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:items-start">
-                <div className="space-y-2">
-                  <ImagePicker
-                    label="Logo do tenant"
-                    helperText={isUploadingLogo ? 'Enviando logo...' : 'PNG/JPG recomendado'}
-                    previewUrl={geral.logoUrl || null}
-                    disabled={isUploadingLogo}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0]
-                      if (file) void handleLogoUpload(file)
-                    }}
-                    onRemove={() => setGeral((prev) => ({ ...prev, logoUrl: '', logoKey: '' }))}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={() => setGeral((prev) => ({ ...prev, tipoPessoa: 'PF' }))}
-                      className={cn(
-                        'rounded-xl border px-3 py-2 text-sm font-semibold transition',
-                        geral.tipoPessoa === 'PF'
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300'
-                          : 'border-slate-300 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800',
-                      )}
-                    >
-                      <UserRound size={14} className="mr-1 inline-block" />
-                      Pessoa física
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setGeral((prev) => ({ ...prev, tipoPessoa: 'PJ' }))}
-                      className={cn(
-                        'rounded-xl border px-3 py-2 text-sm font-semibold transition',
-                        geral.tipoPessoa === 'PJ'
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300'
-                          : 'border-slate-300 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800',
-                      )}
-                    >
-                      <Building2 size={14} className="mr-1 inline-block" />
-                      Pessoa jurídica
-                    </button>
-                  </div>
-
-                  {geral.tipoPessoa === 'PF' ? (
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Input
-                        label="Nome"
-                        value={geral.pfNome}
-                        onChange={(event) => setGeral((prev) => ({ ...prev, pfNome: event.target.value }))}
-                      />
-                      <MaskedInput
-                        label="CPF"
-                        maskType="cpf"
-                        value={geral.pfCpf}
-                        onAccept={(maskedValue) => setGeral((prev) => ({ ...prev, pfCpf: maskedValue }))}
-                      />
-                    </div>
-                  ) : (
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Input
-                        label="Razão social"
-                        value={geral.pjRazaoSocial}
-                        onChange={(event) => setGeral((prev) => ({ ...prev, pjRazaoSocial: event.target.value }))}
-                      />
-                      <Input
-                        label="Nome fantasia"
-                        value={geral.pjNomeFantasia}
-                        onChange={(event) => setGeral((prev) => ({ ...prev, pjNomeFantasia: event.target.value }))}
-                      />
-                      <MaskedInput
-                        label="CNPJ"
-                        maskType="cnpj"
-                        value={geral.pjCnpj}
-                        helperText={isCnpjLookupLoading ? 'Consultando CNPJ...' : 'Digite o CNPJ para autopreencher'}
-                        onAccept={(maskedValue, unmaskedValue) => {
-                          setGeral((prev) => ({ ...prev, pjCnpj: maskedValue }))
-                          void handleCnpjLookup(unmaskedValue)
-                        }}
-                      />
-                      <Input
-                        label="Nome do representante"
-                        value={geral.pjRepresentanteNome}
-                        onChange={(event) =>
-                          setGeral((prev) => ({ ...prev, pjRepresentanteNome: event.target.value }))
-                        }
-                      />
-                      <MaskedInput
-                        label="CPF do representante"
-                        maskType="cpf"
-                        value={geral.pjRepresentanteCpf}
-                        onAccept={(maskedValue) =>
-                          setGeral((prev) => ({ ...prev, pjRepresentanteCpf: maskedValue }))
-                        }
-                      />
-                    </div>
-                  )}
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <MaskedInput
-                      label="CEP"
-                      maskType="cep"
-                      value={geral.cep}
-                      helperText={isCepLookupLoading ? 'Consultando CEP...' : 'Digite o CEP para autopreencher'}
-                      onAccept={(maskedValue, unmaskedValue) => {
-                        setGeral((prev) => ({ ...prev, cep: maskedValue }))
-                        void handleCepLookup(unmaskedValue)
-                      }}
-                    />
-                    <Input
-                      label="Endereço"
-                      value={geral.endereco}
-                      onChange={(event) => setGeral((prev) => ({ ...prev, endereco: event.target.value }))}
-                    />
-                    <Input
-                      label="Bairro"
-                      value={geral.bairro}
-                      onChange={(event) => setGeral((prev) => ({ ...prev, bairro: event.target.value }))}
-                    />
-                    <Input
-                      label="Cidade"
-                      value={geral.cidade}
-                      onChange={(event) => setGeral((prev) => ({ ...prev, cidade: event.target.value }))}
-                    />
-                    <Input
-                      label="Estado"
-                      value={geral.estado}
-                      onChange={(event) => setGeral((prev) => ({ ...prev, estado: event.target.value }))}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <Button type="button" onClick={() => void salvarDadosGerais()} disabled={isSavingGeral}>
-                  {isSavingGeral ? 'Salvando...' : 'Salvar dados gerais'}
-                </Button>
-              </div>
-            </div>
+            <TenantGeralTab
+              geral={geral}
+              setGeral={setGeral}
+              isUploadingLogo={isUploadingLogo}
+              onLogoFileSelect={handleLogoUpload}
+              onLogoRemove={() => setGeral((prev) => ({ ...prev, logoUrl: '', logoKey: '' }))}
+              isCepLookupLoading={isCepLookupLoading}
+              isCnpjLookupLoading={isCnpjLookupLoading}
+              onCepAccept={(_masked, unmasked) => {
+                void handleCepLookup(unmasked)
+              }}
+              onCnpjAccept={(_masked, unmasked) => {
+                void handleCnpjLookup(unmasked)
+              }}
+              onSave={() => void salvarDadosGerais()}
+              isSaving={isSavingGeral}
+            />
           ) : (
-            <div className="space-y-5">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Segurança</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Faça upload do certificado A1 e informe a senha para assinatura digital.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
-                <label className="block rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-                  <span className="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    <FileKey2 size={16} />
-                    Certificado A1 (.pfx/.p12)
-                  </span>
-                  <input
-                    type="file"
-                    accept=".pfx,.p12,application/x-pkcs12"
-                    disabled={isUploadingCert}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0]
-                      if (file) void handleCertUpload(file)
-                    }}
-                    className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-indigo-500 dark:text-slate-300"
-                  />
-                  {seguranca.certificadoA1Key ? (
-                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                      Arquivo atual: {seguranca.certificadoA1Key}
-                    </p>
-                  ) : null}
-                </label>
-
-                <Input
-                  type="password"
-                  label="Senha do certificado digital"
-                  value={seguranca.certificadoSenha}
-                  onChange={(event) =>
-                    setSeguranca((prev) => ({ ...prev, certificadoSenha: event.target.value }))
-                  }
-                  helperText="A senha será salva em desenvolvimento para facilitar testes."
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <Button
-                  type="button"
-                  onClick={() => void salvarSeguranca()}
-                  disabled={isSavingSeguranca || isUploadingCert}
-                >
-                  {isSavingSeguranca ? 'Salvando...' : 'Salvar segurança'}
-                </Button>
-              </div>
-            </div>
+            <TenantSegurancaTab
+              seguranca={seguranca}
+              setSeguranca={setSeguranca}
+              isUploadingCert={isUploadingCert}
+              onCertFileSelect={handleCertUpload}
+              onSave={() => void salvarSeguranca()}
+              isSaving={isSavingSeguranca}
+            />
           )}
         </div>
       </div>
     </section>
   )
 }
-

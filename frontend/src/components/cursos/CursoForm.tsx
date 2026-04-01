@@ -1,10 +1,11 @@
-import { Briefcase, CalendarDays, DollarSign, MapPin, Plus, Save, Trash2, User as UserIcon, X } from 'lucide-react'
+import { Briefcase, CalendarDays, MapPin, Plus, Save, Trash2, User as UserIcon, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { CreateCursoRequest, CreateCursoSessaoRequest, Curso, UpdateCursoRequest } from '../../types'
 import { Button } from '../ui/Button'
 import { DatePicker } from '../ui/DatePicker'
 import { ImagePicker } from '../ui/ImagePicker'
+import { CurrencyInput } from '../ui/CurrencyInput'
 import { Input } from '../ui/Input'
 import { Switch } from '../ui/Switch'
 import { Textarea } from '../ui/TextArea'
@@ -23,7 +24,8 @@ type FormState = {
   ministrante: string
   descricao: string
   conteudo: string
-  valor: string
+  /** `null` = usuário ainda não informou (novo curso); número após digitar ou ao editar. */
+  valor: number | null
   vagas: string
   local: string
   status: boolean
@@ -60,7 +62,7 @@ const initialState: FormState = {
   ministrante: '',
   descricao: '',
   conteudo: '',
-  valor: '0',
+  valor: null,
   vagas: '0',
   local: '',
   status: true,
@@ -94,7 +96,7 @@ export function CursoForm({
       ministrante: selectedCurso.ministrante ?? '',
       descricao: selectedCurso.descricao ?? '',
       conteudo: selectedCurso.conteudo ?? '',
-      valor: String(selectedCurso.valor ?? 0),
+      valor: Number(selectedCurso.valor ?? 0),
       vagas: String(selectedCurso.vagas ?? 0),
       local: selectedCurso.local ?? '',
       status: Boolean(selectedCurso.status),
@@ -167,12 +169,17 @@ export function CursoForm({
       return
     }
 
+    if (form.valor === null) {
+      window.alert('Informe o valor do curso.')
+      return
+    }
+
     const commonPayload = {
       nome: form.nome.trim(),
       ministrante: form.ministrante.trim(),
       descricao: form.descricao.trim() || undefined,
       conteudo: form.conteudo.trim() || undefined,
-      valor: Number(form.valor || 0),
+      valor: Math.max(0, form.valor),
       vagas: Number(form.vagas || 0),
       local: form.local.trim(),
       status: form.status,
@@ -258,15 +265,10 @@ export function CursoForm({
                 required
               />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input
+                <CurrencyInput
                   label="Valor"
-                  type="number"
-                  step="0.01"
                   value={form.valor}
-                  onChange={(event) => setForm((prev) => ({ ...prev, valor: event.target.value }))}
-                  startIcon={<DollarSign size={16} />}
-                  className="md:[&_input]:rounded-2xl md:[&_input]:border-slate-100 md:[&_input]:bg-slate-50 md:[&_input]:pr-5 md:[&_input]:py-3.5 md:[&_input]:font-semibold dark:md:[&_input]:border-slate-700 dark:md:[&_input]:bg-slate-800/60"
-                  required
+                  onChange={(next) => setForm((prev) => ({ ...prev, valor: next }))}
                 />
                 <Input
                   label="Vagas"

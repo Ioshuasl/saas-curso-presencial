@@ -1,4 +1,5 @@
 import { api } from './api'
+import { getAuthSession } from './authToken'
 import { stripTenantScope } from './tenantScope'
 import type {
   ApiMessageResponse,
@@ -52,8 +53,16 @@ function toCursoFormData(payload: CreateCursoRequest | UpdateCursoRequest) {
     formData.append('sessoes', JSON.stringify(safePayload.sessoes))
   }
 
-  if (safePayload.url_imagem === null) {
+  if ('url_imagem' in safePayload && safePayload.url_imagem === null) {
     formData.append('url_imagem', '')
+  }
+
+  /** POST /cursos valida tenant no body (Zod); multipart não herda headers para o parse. */
+  const session = getAuthSession()
+  if (session?.tenantSlug) {
+    formData.append('tenant_slug', session.tenantSlug)
+  } else if (session?.tenantId != null) {
+    formData.append('tenant_id', String(session.tenantId))
   }
 
   return formData

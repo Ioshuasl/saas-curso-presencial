@@ -13,9 +13,10 @@ const routes = new Router();
  *   description: Configurações por tenant (JSONB)
  */
 
-// Mantido com auth + adminOnly como as demais rotas de tenancy do projeto.
-routes.use('/tenants', authMiddleware, adminOnly);
-
+/**
+ * Leitura: qualquer usuário autenticado do próprio tenant (ex.: telefone/WhatsApp no catálogo).
+ * Escrita: apenas admin (PATCH abaixo).
+ */
 /**
  * @swagger
  * /tenants/{tenantId}/config:
@@ -34,7 +35,7 @@ routes.use('/tenants', authMiddleware, adminOnly);
  *       200:
  *         description: Configuração encontrada
  */
-routes.get('/tenants/:tenantId/config', ConfigController.show);
+routes.get('/tenants/:tenantId/config', authMiddleware, ConfigController.show);
 
 /**
  * @swagger
@@ -56,6 +57,8 @@ routes.get('/tenants/:tenantId/config', ConfigController.show);
  */
 routes.patch(
   '/tenants/:tenantId/config',
+  authMiddleware,
+  adminOnly,
   validate(updateConfigSchema),
   ConfigController.update
 );

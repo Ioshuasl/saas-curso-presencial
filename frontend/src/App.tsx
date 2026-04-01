@@ -9,9 +9,13 @@ import {
   AdminDashboardPage,
   AdminUsersPage,
   AlunosPage,
+  CatalogoPage,
+  FeedbackPage,
   FinanceiroPage,
-  HomePage,
   LoginPage,
+  MeusCursosPage,
+  PagamentosPage,
+  PerfilAlunoPage,
   TenantConfigPage,
   TenantsPage,
 } from './pages'
@@ -54,6 +58,11 @@ function App() {
     '/cursos': 'Cursos',
     '/financeiro': 'Financeiro',
     '/tenants': 'Tenants',
+    '/catalogo': 'Catalogo',
+    '/meus-cursos': 'Meus Cursos',
+    '/pagamentos': 'Pagamentos',
+    '/perfil': 'Perfil',
+    '/feedback': 'Feedback',
   }
 
   const currentPageTitle = pageTitleByPath[location.pathname]
@@ -190,11 +199,11 @@ function App() {
           </Routes>
         ) : (
           <Routes>
-            <Route path="/catalogo" element={<HomePage role={currentRole} />} />
-            <Route path="/meus-cursos" element={<HomePage role={currentRole} />} />
-            <Route path="/pagamentos" element={<HomePage role={currentRole} />} />
-            <Route path="/perfil" element={<HomePage role={currentRole} />} />
-            <Route path="/feedback" element={<HomePage role={currentRole} />} />
+            <Route path="/catalogo" element={<CatalogoPage />} />
+            <Route path="/meus-cursos" element={<MeusCursosPage />} />
+            <Route path="/pagamentos" element={<PagamentosPage />} />
+            <Route path="/perfil" element={<PerfilAlunoPage />} />
+            <Route path="/feedback" element={<FeedbackPage />} />
             <Route path="*" element={<Navigate to={`/catalogo${tenantSearch}`} replace />} />
           </Routes>
         )}
