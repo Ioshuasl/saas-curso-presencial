@@ -16,7 +16,6 @@ const studentMenuItems: SidebarMenuItem[] = [
   { id: 'my-courses', label: 'Meus Cursos', path: '/meus-cursos', icon: 'graduation-cap' },
   { id: 'payments', label: 'Pagamentos', path: '/pagamentos', icon: 'credit-card' },
   { id: 'profile', label: 'Perfil', path: '/perfil', icon: 'user-circle' },
-  { id: 'feedback', label: 'Feedback', path: '/feedback', icon: 'message-square' },
 ]
 
 export function StudentLayout({

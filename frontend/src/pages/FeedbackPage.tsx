@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Lock } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '../components/ui/Button'
@@ -7,9 +8,8 @@ import { cursoService, feedbackFinalService, questionarioInicialService } from '
 import type { Curso } from '../types'
 
 type QuestionarioForm = {
-  dores: string
-  expectativas: string
-  objetivo_principal: string
+  maior_dor_inicio: string
+  principal_expectativa: string
 }
 
 type FeedbackForm = {
@@ -24,10 +24,10 @@ export function FeedbackPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmittingQuestionario, setIsSubmittingQuestionario] = useState(false)
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false)
+  const [questionarioInicialRespondido, setQuestionarioInicialRespondido] = useState(false)
   const [questionarioForm, setQuestionarioForm] = useState<QuestionarioForm>({
-    dores: '',
-    expectativas: '',
-    objetivo_principal: '',
+    maior_dor_inicio: '',
+    principal_expectativa: '',
   })
   const [feedbackForm, setFeedbackForm] = useState<FeedbackForm>({
     nota: 5,
@@ -51,33 +51,31 @@ export function FeedbackPage() {
   }
 
   async function loadExistingResponses(cursoId: number) {
+    setQuestionarioInicialRespondido(false)
+    setQuestionarioForm({ maior_dor_inicio: '', principal_expectativa: '' })
+    setFeedbackForm({ nota: 5, depoimento: '', impacto: '' })
+
     try {
-      const [questionarioResponse, feedbackResponse] = await Promise.allSettled([
-        questionarioInicialService.buscarQuestionarioPorCurso(cursoId),
-        feedbackFinalService.buscarFeedbackPorCurso(cursoId),
-      ])
+      const questionarioResponse = await questionarioInicialService.buscarQuestionarioPorCurso(cursoId)
+      setQuestionarioForm({
+        maior_dor_inicio: questionarioResponse.data.maior_dor_inicio ?? '',
+        principal_expectativa: questionarioResponse.data.principal_expectativa ?? '',
+      })
+      setQuestionarioInicialRespondido(true)
 
-      if (questionarioResponse.status === 'fulfilled') {
-        setQuestionarioForm({
-          dores: questionarioResponse.value.data.dores ?? '',
-          expectativas: questionarioResponse.value.data.expectativas ?? '',
-          objetivo_principal: questionarioResponse.value.data.objetivo_principal ?? '',
-        })
-      } else {
-        setQuestionarioForm({ dores: '', expectativas: '', objetivo_principal: '' })
-      }
-
-      if (feedbackResponse.status === 'fulfilled') {
+      try {
+        const feedbackResponse = await feedbackFinalService.buscarFeedbackPorCurso(cursoId)
         setFeedbackForm({
-          nota: feedbackResponse.value.data.nota ?? 5,
-          depoimento: feedbackResponse.value.data.depoimento ?? '',
-          impacto: feedbackResponse.value.data.impacto ?? '',
+          nota: feedbackResponse.data.nota ?? 5,
+          depoimento: feedbackResponse.data.depoimento ?? '',
+          impacto: feedbackResponse.data.impacto ?? '',
         })
-      } else {
+      } catch {
         setFeedbackForm({ nota: 5, depoimento: '', impacto: '' })
       }
     } catch {
-      setQuestionarioForm({ dores: '', expectativas: '', objetivo_principal: '' })
+      setQuestionarioInicialRespondido(false)
+      setQuestionarioForm({ maior_dor_inicio: '', principal_expectativa: '' })
       setFeedbackForm({ nota: 5, depoimento: '', impacto: '' })
     }
   }
@@ -86,14 +84,21 @@ export function FeedbackPage() {
     event.preventDefault()
     if (!selectedCursoId) return
 
+    const maior = questionarioForm.maior_dor_inicio.trim()
+    const expectativa = questionarioForm.principal_expectativa.trim()
+    if (maior.length < 3 || expectativa.length < 3) {
+      toast.error('Preencha a maior dor e a principal expectativa com pelo menos 3 caracteres.')
+      return
+    }
+
     setIsSubmittingQuestionario(true)
     try {
       await questionarioInicialService.enviarOuAtualizarQuestionario({
         curso_id: selectedCursoId,
-        dores: questionarioForm.dores.trim(),
-        expectativas: questionarioForm.expectativas.trim(),
-        objetivo_principal: questionarioForm.objetivo_principal.trim(),
+        maior_dor_inicio: maior,
+        principal_expectativa: expectativa,
       })
+      setQuestionarioInicialRespondido(true)
       if (import.meta.env.DEV) {
         toast.success('Questionario inicial enviado com sucesso.')
       }
@@ -109,6 +114,11 @@ export function FeedbackPage() {
   async function handleSubmitFeedback(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!selectedCursoId) return
+
+    if (!questionarioInicialRespondido) {
+      toast.error('Responda e salve o questionario inicial antes do feedback final.')
+      return
+    }
 
     setIsSubmittingFeedback(true)
     try {
@@ -146,7 +156,7 @@ export function FeedbackPage() {
           Feedback e Questionarios
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Compartilhe expectativas no inicio e avalie os resultados ao final.
+          Primeiro responda o questionario inicial; depois o feedback final fica disponivel.
         </p>
       </div>
 
@@ -179,27 +189,23 @@ export function FeedbackPage() {
       >
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Questionario inicial</h3>
         <Textarea
-          label="Quais suas maiores dores?"
+          label="Maior dor no inicio"
           rows={3}
-          value={questionarioForm.dores}
+          required
+          minLength={3}
+          value={questionarioForm.maior_dor_inicio}
           onChange={(event) => {
-            setQuestionarioForm((prev) => ({ ...prev, dores: event.target.value }))
+            setQuestionarioForm((prev) => ({ ...prev, maior_dor_inicio: event.target.value }))
           }}
         />
         <Textarea
-          label="Quais suas expectativas para o curso?"
+          label="Principal expectativa para o curso"
           rows={3}
-          value={questionarioForm.expectativas}
+          required
+          minLength={3}
+          value={questionarioForm.principal_expectativa}
           onChange={(event) => {
-            setQuestionarioForm((prev) => ({ ...prev, expectativas: event.target.value }))
-          }}
-        />
-        <Textarea
-          label="Objetivo principal"
-          rows={3}
-          value={questionarioForm.objetivo_principal}
-          onChange={(event) => {
-            setQuestionarioForm((prev) => ({ ...prev, objetivo_principal: event.target.value }))
+            setQuestionarioForm((prev) => ({ ...prev, principal_expectativa: event.target.value }))
           }}
         />
         <Button type="submit" isLoading={isSubmittingQuestionario} disabled={!selectedCursoId}>
@@ -207,52 +213,72 @@ export function FeedbackPage() {
         </Button>
       </form>
 
-      <form
-        className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900"
-        onSubmit={(event) => {
-          void handleSubmitFeedback(event)
-        }}
-      >
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Feedback final</h3>
+      <div className="relative rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+        {!questionarioInicialRespondido ? (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white/90 p-4 text-center dark:bg-slate-900/90">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <Lock size={18} />
+            </span>
+            <p className="max-w-sm text-sm font-medium text-slate-700 dark:text-slate-200">
+              Salve o questionario inicial deste curso para desbloquear o feedback final.
+            </p>
+          </div>
+        ) : null}
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
-            Nota (1 a 5)
-          </label>
-          <input
-            type="number"
-            min={1}
-            max={5}
-            value={feedbackForm.nota}
+        <form
+          className={`space-y-4 ${!questionarioInicialRespondido ? 'pointer-events-none opacity-40' : ''}`}
+          onSubmit={(event) => {
+            void handleSubmitFeedback(event)
+          }}
+        >
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Feedback final</h3>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Nota (1 a 5)
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={5}
+              disabled={!questionarioInicialRespondido}
+              value={feedbackForm.nota}
+              onChange={(event) => {
+                const value = Number(event.target.value)
+                setFeedbackForm((prev) => ({ ...prev, nota: Number.isNaN(value) ? 5 : value }))
+              }}
+              className="h-10 w-24 rounded-md border border-slate-300 bg-white px-3 text-sm disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-900"
+            />
+          </div>
+
+          <Textarea
+            label="Depoimento"
+            rows={3}
+            disabled={!questionarioInicialRespondido}
+            value={feedbackForm.depoimento}
             onChange={(event) => {
-              const value = Number(event.target.value)
-              setFeedbackForm((prev) => ({ ...prev, nota: Number.isNaN(value) ? 5 : value }))
+              setFeedbackForm((prev) => ({ ...prev, depoimento: event.target.value }))
             }}
-            className="h-10 w-24 rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
           />
-        </div>
+          <Textarea
+            label="Impacto do aprendizado"
+            rows={3}
+            disabled={!questionarioInicialRespondido}
+            value={feedbackForm.impacto}
+            onChange={(event) => {
+              setFeedbackForm((prev) => ({ ...prev, impacto: event.target.value }))
+            }}
+          />
 
-        <Textarea
-          label="Depoimento"
-          rows={3}
-          value={feedbackForm.depoimento}
-          onChange={(event) => {
-            setFeedbackForm((prev) => ({ ...prev, depoimento: event.target.value }))
-          }}
-        />
-        <Textarea
-          label="Impacto do aprendizado"
-          rows={3}
-          value={feedbackForm.impacto}
-          onChange={(event) => {
-            setFeedbackForm((prev) => ({ ...prev, impacto: event.target.value }))
-          }}
-        />
-
-        <Button type="submit" isLoading={isSubmittingFeedback} disabled={!selectedCursoId}>
-          Salvar feedback final
-        </Button>
-      </form>
+          <Button
+            type="submit"
+            isLoading={isSubmittingFeedback}
+            disabled={!selectedCursoId || !questionarioInicialRespondido}
+          >
+            Salvar feedback final
+          </Button>
+        </form>
+      </div>
     </section>
   )
 }
