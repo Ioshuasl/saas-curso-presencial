@@ -84,12 +84,14 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300">
-            Tenant detectado:{' '}
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
-              {detectedTenantSlug || 'não identificado'}
-            </span>
-          </p>
+          {import.meta.env.DEV ? (
+            <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300">
+              Tenant detectado:{' '}
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
+                {detectedTenantSlug || 'não identificado'}
+              </span>
+            </p>
+          ) : null}
 
           <div className="space-y-1.5">
             <label htmlFor="identificador" className="sr-only">
