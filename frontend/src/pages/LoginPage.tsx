@@ -73,7 +73,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8 dark:bg-slate-950">
-      <section className="w-full max-w-md rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_22px_60px_rgba(15,23,42,0.10)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+      <section className="w-full max-w-md rounded-3xl border border-slate-200/80 bg-white/95 p-6 py-8 shadow-[0_22px_60px_rgba(15,23,42,0.10)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
         <div className="mb-6 text-center">
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">
             Bem-vindo de volta
@@ -167,10 +167,6 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
             {isSubmitting ? 'Entrando...' : 'Acessar painel'}
           </button>
         </form>
-
-        <p className="mt-5 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
-          Opus v1.0 - Painel Administrativo
-        </p>
       </section>
     </main>
   )
