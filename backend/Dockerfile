@@ -19,7 +19,7 @@ COPY --from=build /app .
 
 ENV NODE_ENV=production
 
-EXPOSE 3000
+EXPOSE 8080
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
