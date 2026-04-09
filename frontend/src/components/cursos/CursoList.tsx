@@ -223,7 +223,7 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
                 alunosInscritos.map((aluno) => {
                   const nome =
                     aluno.perfil_aluno?.nome_completo || aluno.nome_completo || aluno.username || 'Aluno'
-                  const inscricao = (aluno as CursoComInscritos['alunos_inscritos'][number]).Inscricao
+                  const inscricao = aluno.Inscricao ?? aluno.inscricao
                   const dataInscricao = inscricao?.data_inscricao
                     ? new Date(inscricao.data_inscricao).toLocaleDateString('pt-BR')
                     : '-'

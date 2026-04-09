@@ -85,6 +85,7 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
   }, [isOpen, curso])
 
   if (!isOpen || !curso) return null
+  const cursoId = curso.id
 
   async function handleSalvarQuestionario(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -98,7 +99,7 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
     setIsSavingQuestionario(true)
     try {
       await questionarioInicialService.enviarOuAtualizarQuestionario({
-        curso_id: curso.id,
+        curso_id: cursoId,
         maior_dor_inicio: maior,
         principal_expectativa: expectativa,
       })
@@ -121,7 +122,7 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
     setIsSavingFeedback(true)
     try {
       await feedbackFinalService.enviarOuAtualizarFeedback({
-        curso_id: curso.id,
+        curso_id: cursoId,
         nota: feedbackForm.nota,
         depoimento: feedbackForm.depoimento?.trim(),
         impacto: feedbackForm.impacto?.trim(),

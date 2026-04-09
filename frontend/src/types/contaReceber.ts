@@ -63,7 +63,7 @@ export type CreateContaReceberRequest = {
   parcelas: CreateParcelaContaReceberRequest[]
 }
 
-export type UpdateParcelaContaReceberRequest = Partial<CreateParcelaContaReceberRequest> & {
+export type UpdateParcelaContaReceberRequest = CreateParcelaContaReceberRequest & {
   id?: number
 }
 

@@ -147,12 +147,12 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
 
       if (type === 'start' && startDate) {
           const newDate = setMinutes(setHours(startDate, h), m);
-          onChange(newDate, endDate);
+          onChange(newDate, endDate ?? null);
       }
 
       if (type === 'end' && endDate) {
           const newDate = setMinutes(setHours(endDate, h), m);
-          onChange(startDate, newDate);
+          onChange(startDate ?? null, newDate);
       }
   };
 

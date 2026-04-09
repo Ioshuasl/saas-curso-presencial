@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, ChevronRight, Clock, Edit2, Link as LinkIcon, MoreHorizontal, Trash2 } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, ChevronRight, Clock, Edit2, Link as LinkIcon, Trash2 } from 'lucide-react'
 
 import type { ContaPagar, ContaReceber } from '../../types'
 import { cn } from '../../utils'

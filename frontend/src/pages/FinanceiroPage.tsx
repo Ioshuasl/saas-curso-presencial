@@ -24,6 +24,7 @@ import type {
 } from '../types'
 
 type FilterState = FinanceiroFilterValue
+type UnifiedStatusFilter = Exclude<FinanceiroFilterValue['status'], 'ALL'>
 
 const PAGE_SIZE = 10
 

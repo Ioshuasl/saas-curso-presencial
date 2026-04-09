@@ -1,8 +1,16 @@
 import axios from 'axios'
 import { clearAuthSession, getAuthSession, getAuthToken } from './authToken'
 
+const fallbackApiBaseUrl = 'http://localhost:3000/api'
+const apiBaseUrl =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() || fallbackApiBaseUrl
+
+export const appEnv =
+  (import.meta.env.VITE_APP_ENV as string | undefined)?.trim() ||
+  (import.meta.env.DEV ? 'development' : 'production')
+
 export const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
