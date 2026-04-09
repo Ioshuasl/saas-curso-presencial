@@ -13,6 +13,21 @@ let processKeeper = null;
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (_req, res) => {
+  return res.status(200).json({
+    status: 'ok',
+    service: 'backend',
+  });
+});
+
+app.get('/api', (_req, res) => {
+  return res.status(200).json({
+    status: 'ok',
+    service: 'backend',
+    scope: 'api',
+  });
+});
+
 app.use('/api', routes);
 app.use('/api-docs', swaggerUiMiddleware.serve, swaggerUiMiddleware.setup(swaggerSpec));
 
