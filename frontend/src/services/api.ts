@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { clearAuthSession, getAuthSession, getAuthToken } from './authToken'
 
-const fallbackApiBaseUrl = 'http://localhost:3000/api'
+const fallbackApiBaseUrl = import.meta.env.DEV ? 'http://localhost:3000/api' : '/api'
 const apiBaseUrl =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() || fallbackApiBaseUrl
 

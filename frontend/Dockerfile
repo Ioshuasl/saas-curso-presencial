@@ -1,7 +1,7 @@
 # --- Estágio 1: Build da Aplicação ---
 # Utiliza uma imagem Node.js na versão LTS (Long Term Support) para construir o projeto.
 # A tag 'alpine' indica uma versão leve do sistema operacional.
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
 # Define o diretório de trabalho dentro do contêiner.
 WORKDIR /app
@@ -11,10 +11,16 @@ COPY package.json package-lock.json* ./
 
 # Instala todas as dependências, incluindo as de desenvolvimento,
 # que são necessárias para o processo de build do Vite e TypeScript.
-RUN npm install
+RUN npm ci
 
 # Copia o restante do código-fonte da aplicação.
 COPY . .
+
+# Variáveis do Vite precisam existir no build (não no runtime do Nginx).
+ARG VITE_API_BASE_URL
+ARG VITE_APP_ENV=production
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_APP_ENV=${VITE_APP_ENV}
 
 # Executa o comando de build definido no package.json.
 # Isso irá compilar o TypeScript e gerar os arquivos estáticos na pasta /dist.
