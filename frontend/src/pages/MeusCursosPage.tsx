@@ -10,12 +10,24 @@ export function MeusCursosPage() {
   const [cursos, setCursos] = useState<Curso[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [confirmingCourseId, setConfirmingCourseId] = useState<number | null>(null)
+  const [presenceByCourseId, setPresenceByCourseId] = useState<Record<number, boolean>>({})
 
   async function loadCursos() {
     setIsLoading(true)
     try {
       const response = await cursoService.listarMeusCursos()
       setCursos(response.data)
+      const presenceChecks = await Promise.all(
+        response.data.map(async (curso) => {
+          try {
+            const statusResponse = await inscricaoService.consultarStatusPresenca(curso.id)
+            return [curso.id, Boolean(statusResponse.data.presenca_confirmada)] as const
+          } catch {
+            return [curso.id, false] as const
+          }
+        }),
+      )
+      setPresenceByCourseId(Object.fromEntries(presenceChecks))
     } catch {
       if (import.meta.env.DEV) {
         toast.error('Nao foi possivel carregar seus cursos.')
@@ -29,6 +41,7 @@ export function MeusCursosPage() {
     setConfirmingCourseId(cursoId)
     try {
       await inscricaoService.confirmarPresenca(cursoId)
+      setPresenceByCourseId((prev) => ({ ...prev, [cursoId]: true }))
       if (import.meta.env.DEV) {
         toast.success('Presenca confirmada com sucesso.')
       }
@@ -69,31 +82,36 @@ export function MeusCursosPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {cursos.map((curso) => (
-          <article
-            key={curso.id}
-            className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900"
-          >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{curso.nome}</h3>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-              Ministrante: {curso.ministrante}
-            </p>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{curso.local ?? 'Local a confirmar'}</p>
+        {cursos.map((curso) => {
+          const isPresenceConfirmed = Boolean(presenceByCourseId[curso.id])
 
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-4"
-              isLoading={confirmingCourseId === curso.id}
-              startIcon={<CheckCircle2 size={16} />}
-              onClick={() => {
-                void handleConfirmarPresenca(curso.id)
-              }}
+          return (
+            <article
+              key={curso.id}
+              className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900"
             >
-              Confirmar Presenca
-            </Button>
-          </article>
-        ))}
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{curso.nome}</h3>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Ministrante: {curso.ministrante}
+              </p>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{curso.local ?? 'Local a confirmar'}</p>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4"
+                isLoading={confirmingCourseId === curso.id}
+                disabled={isPresenceConfirmed}
+                startIcon={<CheckCircle2 size={16} />}
+                onClick={() => {
+                  void handleConfirmarPresenca(curso.id)
+                }}
+              >
+                {isPresenceConfirmed ? 'Presenca ja confirmada' : 'Confirmar Presenca'}
+              </Button>
+            </article>
+          )
+        })}
       </div>
     </section>
   )

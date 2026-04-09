@@ -1,5 +1,5 @@
+import { File, UploadCloud, X } from 'lucide-react';
 import React, { useRef, useState } from 'react';
-import { UploadCloud, File, X, Check } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface FileUploaderProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -78,13 +78,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           {label}
         </label>
       )}
-      
+
       {!selectedFile ? (
         <div
           className={cn(
             "relative flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed transition-all duration-200",
-            dragActive 
-              ? "border-primary-500 bg-primary-50" 
+            dragActive
+              ? "border-primary-500 bg-primary-50"
               : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400",
              error && "border-red-500 bg-red-50",
              disabled && "opacity-50 cursor-not-allowed pointer-events-none"

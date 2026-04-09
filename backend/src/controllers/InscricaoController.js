@@ -99,6 +99,35 @@ class InscricaoController {
     }
   }
 
+  async statusPresenca(req, res) {
+    try {
+      const cursoId = Number(req.params.curso_id);
+      if (!Number.isInteger(cursoId) || cursoId < 1) {
+        return res.status(400).json({ error: 'curso_id inválido' });
+      }
+
+      const tenantId = await resolveTenantIdForAdminRequest(req);
+      const isAdminLike = isAdminLikeRole(req.userRole);
+
+      const aluno_id =
+        isAdminLike && req.query?.aluno_id
+          ? Number(req.query.aluno_id)
+          : req.userId;
+
+      if (isAdminLike && req.query?.aluno_id && (!Number.isInteger(aluno_id) || aluno_id < 1)) {
+        return res.status(400).json({ error: 'aluno_id inválido' });
+      }
+
+      const status = await InscricaoService.obterStatusPresenca(aluno_id, cursoId, tenantId);
+      return res.json(status);
+    } catch (e) {
+      if (e.message === 'Inscrição não encontrada para este aluno neste curso.') {
+        return res.status(404).json({ error: e.message });
+      }
+      return res.status(400).json({ error: e.message });
+    }
+  }
+
   async findByCurso(req, res) {
     try {
       const cursoId = Number(req.params.curso_id);

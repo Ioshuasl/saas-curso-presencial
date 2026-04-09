@@ -7,6 +7,7 @@ import type {
   InscricaoContagemResponse,
   InscricoesPorCursoResponse,
   MinhasInscricoesResponse,
+  PresencaCursoResponse,
 } from '../types'
 
 export const inscricaoService = {
@@ -29,14 +30,23 @@ export const inscricaoService = {
     return api.post<Inscricao>('/inscricoes', stripTenantScope(payload))
   },
 
-  confirmarPresenca(cursoId: number) {
+  confirmarPresenca(cursoId: number, alunoId?: number) {
     return api.post<Inscricao>(
       `/inscricoes/${cursoId}/confirmar-presenca`,
-      { curso_id: cursoId },
+      {
+        curso_id: cursoId,
+        aluno_id: alunoId,
+      },
     )
   },
 
-  removerInscricao(cursoId: number) {
-    return api.delete<void>(`/inscricoes/${cursoId}`)
+  consultarStatusPresenca(cursoId: number) {
+    return api.get<PresencaCursoResponse>(`/inscricoes/${cursoId}/presenca`)
+  },
+
+  removerInscricao(cursoId: number, alunoId?: number) {
+    return api.delete<void>(`/inscricoes/${cursoId}`, {
+      data: alunoId ? { aluno_id: alunoId } : undefined,
+    })
   },
 }

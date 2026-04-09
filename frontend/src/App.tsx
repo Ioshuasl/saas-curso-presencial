@@ -7,6 +7,7 @@ import { AppLayout } from './layout'
 import {
   AdminCursoPage,
   AdminDashboardPage,
+  AdminInscricaoPage,
   AdminUsersPage,
   AlunosPage,
   CatalogoPage,
@@ -56,6 +57,7 @@ function App() {
     '/admins': 'Usuários',
     '/alunos': 'Alunos',
     '/cursos': 'Cursos',
+    '/inscricoes': 'Inscricoes',
     '/financeiro': 'Financeiro',
     '/tenants': 'Tenants',
     '/catalogo': 'Catalogo',
@@ -189,6 +191,7 @@ function App() {
             <Route path="/dashboard" element={<AdminDashboardPage />} />
             <Route path="/admins" element={<AdminUsersPage />} />
             <Route path="/cursos" element={<AdminCursoPage />} />
+            <Route path="/inscricoes" element={<AdminInscricaoPage />} />
             <Route path="/alunos" element={<AlunosPage />} />
             <Route path="/financeiro" element={<FinanceiroPage />} />
             <Route path="/configuracoes" element={<TenantConfigPage />} />

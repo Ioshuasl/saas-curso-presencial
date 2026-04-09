@@ -1,5 +1,5 @@
+import { AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import React, { useState } from 'react';
-import { Eye, EyeOff, Search, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
@@ -15,22 +15,22 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ 
-    className, 
-    type = "text", 
-    label, 
-    helperText, 
-    error, 
-    success, 
-    startIcon, 
-    endIcon, 
-    fullWidth = true, 
-    disabled, 
+  ({
+    className,
+    type = "text",
+    label,
+    helperText,
+    error,
+    success,
+    startIcon,
+    endIcon,
+    fullWidth = true,
+    disabled,
     readOnly,
     required,
     size = 'md',
     startIconGap = 'normal',
-    ...props 
+    ...props
   }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === 'password';
@@ -44,9 +44,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     };
 
     const baseStyles = "flex w-full rounded-md border bg-white text-slate-900 ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 transition-all duration-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-offset-slate-900 dark:placeholder:text-slate-500 dark:disabled:bg-slate-800";
-    
+
     // ReadOnly style for CRM (often distinguishable from disabled)
-    const readOnlyStyles = readOnly 
+    const readOnlyStyles = readOnly
       ? "bg-slate-50 border-slate-200 text-slate-600 focus-visible:ring-0 cursor-default dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
       : "";
 
@@ -86,8 +86,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={cn("flex flex-col gap-1.5", fullWidth ? "w-full" : "w-auto", className)}>
         {label && (
-          <label 
-            htmlFor={props.id} 
+          <label
+            htmlFor={props.id}
             className={cn(
               "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-1",
               error ? "text-red-600" : "text-slate-700 dark:text-slate-200"
@@ -103,7 +103,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               {startIcon}
             </div>
           )}
-          
+
           <input
             type={inputType}
             className={cn(baseStyles, sizeClasses[size], stateStyles, readOnlyStyles, paddingLeft, paddingRight)}
@@ -142,7 +142,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </div>
           )}
         </div>
-        
+
         {(helperText || error) && (
           <p className={cn("text-[0.8rem] transition-all", error ? "text-red-600 font-medium" : "text-slate-500 dark:text-slate-400")}>
             {error || helperText}

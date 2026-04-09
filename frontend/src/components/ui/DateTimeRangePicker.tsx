@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Calendar as CalendarIcon, X, Check, ArrowRight, Clock } from 'lucide-react';
-import { format, isValid, addMonths, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths, setHours, setMinutes, startOfDay, endOfDay } from 'date-fns';
+import { addMonths, endOfMonth, endOfWeek, format, isValid, setHours, setMinutes, startOfMonth, startOfWeek, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '../../utils/cn';
+import { Button } from './Button';
 import { Calendar } from './Calendar';
 import { Input } from './Input';
-import { Button } from './Button';
 import { TimePicker } from './TimePicker';
 
 interface DateTimeRangePickerProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
@@ -44,7 +44,7 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [popoverSide, setPopoverSide] = useState<'bottom' | 'top'>('bottom');
   const [isDesktop, setIsDesktop] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 768 : false));
-  
+
   // Controlled navigation state for calendar
   const [viewDate, setViewDate] = useState<Date>(() => startDate || new Date());
 
@@ -123,7 +123,7 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
               newStart = setMinutes(setHours(newStart, h), m);
           } else {
               // Default start time: 10:00 as a standard rental start
-              newStart = setMinutes(setHours(newStart, 10), 0); 
+              newStart = setMinutes(setHours(newStart, 10), 0);
           }
       }
 
@@ -136,20 +136,20 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
               newEnd = setMinutes(setHours(newEnd, 10), 0);
           }
       }
-      
+
       onChange(newStart, newEnd);
   };
 
   const handleTimeChange = (type: 'start' | 'end', timeStr: string | null) => {
       if (!timeStr) return; // Handle clearing logic if needed
-      
+
       const [h, m] = timeStr.split(':').map(Number);
 
       if (type === 'start' && startDate) {
           const newDate = setMinutes(setHours(startDate, h), m);
           onChange(newDate, endDate);
       }
-      
+
       if (type === 'end' && endDate) {
           const newDate = setMinutes(setHours(endDate, h), m);
           onChange(startDate, newDate);
@@ -197,10 +197,10 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
 
   const getDisplayValue = () => {
     if (!startDate) return "";
-    
+
     const timeFormat = use12HourFormat ? "hh:mm a" : "HH:mm";
     const startStr = isValid(startDate) ? format(startDate, `dd/MM/yyyy ${timeFormat}`, { locale: ptBR }) : "";
-    
+
     if (!endDate) {
         return `${startStr} - ...`;
     }
@@ -221,9 +221,9 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
             helperText={helperText}
             startIcon={<CalendarIcon size={16} />}
             endIcon={startDate && !disabled ? (
-                <button 
-                    type="button" 
-                    onClick={handleClear} 
+                <button
+                    type="button"
+                    onClick={handleClear}
                     className="hover:bg-slate-100 p-1 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
                 >
                     <X size={14} />
@@ -236,14 +236,14 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
       </div>
 
       {isOpen && !disabled && (
-        <div 
+        <div
             className={cn(
                 "absolute left-0 z-50 w-[300px] sm:w-auto sm:min-w-[550px] lg:min-w-[750px] animate-in fade-in zoom-in-95 duration-100",
                 popoverSide === 'bottom' ? "top-[calc(100%+4px)] origin-top" : "bottom-[calc(100%+4px)] origin-bottom"
             )}
         >
           <div className="bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden flex flex-col sm:flex-row">
-             
+
              {/* Presets Sidebar */}
              <div className="bg-slate-50 border-b sm:border-b-0 sm:border-r border-slate-200 p-2 sm:p-3 sm:w-[140px] flex flex-row sm:flex-col gap-2 overflow-x-auto sm:overflow-visible">
                 <button type="button" onClick={() => handlePreset('today')} className="text-left px-3 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary-600 hover:shadow-sm rounded-md transition-all whitespace-nowrap">
@@ -279,7 +279,7 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
                             hideNextButton={isDesktop}
                         />
                     </div>
-                    
+
                     {/* Right Calendar (Desktop Only) */}
                     <div className="hidden md:block flex-1 border-l border-slate-100 pl-8">
                         <Calendar
@@ -301,8 +301,8 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
                 <div className="px-4 py-3 bg-slate-50/50 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Retirada (Início)</label>
-                        <TimePicker 
-                            value={startTime} 
+                        <TimePicker
+                            value={startTime}
                             onChange={(val) => handleTimeChange('start', val)}
                             disabled={!startDate}
                             use12HourFormat={use12HourFormat}
@@ -312,8 +312,8 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Devolução (Fim)</label>
-                        <TimePicker 
-                            value={endTime} 
+                        <TimePicker
+                            value={endTime}
                             onChange={(val) => handleTimeChange('end', val)}
                             disabled={!endDate}
                             use12HourFormat={use12HourFormat}
@@ -344,16 +344,16 @@ export const DateTimeRangePicker: React.FC<DateTimeRangePickerProps> = ({
                         >
                             Limpar
                         </Button>
-                        <Button 
-                            variant="secondary" 
-                            size="sm" 
+                        <Button
+                            variant="secondary"
+                            size="sm"
                             onClick={() => setIsOpen(false)}
                             className="flex-1 sm:flex-none"
                         >
                             Cancelar
                         </Button>
-                        <Button 
-                            size="sm" 
+                        <Button
+                            size="sm"
                             onClick={() => setIsOpen(false)}
                             startIcon={<Check size={14} />}
                             disabled={!startDate || !endDate}

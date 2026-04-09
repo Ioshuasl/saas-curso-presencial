@@ -84,6 +84,9 @@ routes.post(
   InscricaoController.confirmarPresenca,
 );
 
+// Aluno consulta status de presença no curso
+routes.get('/inscricoes/:curso_id/presenca', InscricaoController.statusPresenca);
+
 // Admin lista inscrições por curso (com dados do curso + alunos inscritos)
 routes.get(
   '/inscricoes/curso/:curso_id',

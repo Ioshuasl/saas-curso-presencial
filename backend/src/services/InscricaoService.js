@@ -158,6 +158,26 @@ class InscricaoService {
     return inscricao;
   }
 
+  async obterStatusPresenca(aluno_id, curso_id, tenantId) {
+    const tid = requireTenantId(tenantId);
+    const inscricao = await Inscricao.findOne({
+      where: mergeTenantWhere(tid, { aluno_id, curso_id }),
+      attributes: ['id', 'aluno_id', 'curso_id', 'presenca_confirmada', 'data_inscricao'],
+    });
+
+    if (!inscricao) {
+      throw new Error('Inscrição não encontrada para este aluno neste curso.');
+    }
+
+    return {
+      inscricao_id: inscricao.id,
+      aluno_id: inscricao.aluno_id,
+      curso_id: inscricao.curso_id,
+      presenca_confirmada: Boolean(inscricao.presenca_confirmada),
+      data_inscricao: inscricao.data_inscricao,
+    };
+  }
+
   /**
    * Conta inscrições do tenant com filtros opcionais.
    * @param {string|number} tenantId

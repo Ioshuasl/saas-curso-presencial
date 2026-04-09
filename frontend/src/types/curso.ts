@@ -1,5 +1,5 @@
-import type { Aluno, PaginatedResponse, PaginacaoApi } from './usuario'
 import type { TenantScopedQuery } from './tenant'
+import type { Aluno, PaginacaoApi } from './usuario'
 
 export type CursoSessao = {
   id: number

@@ -47,6 +47,7 @@ export type CreateInscricaoRequest = {
 
 export type ConfirmarPresencaRequest = {
   curso_id: number
+  aluno_id?: number
 }
 
 export type MinhasInscricoesResponse = Curso[]
@@ -65,4 +66,12 @@ export type InscricaoContagemQuery = TenantScopedQuery & {
 
 export type InscricaoContagemResponse = {
   total: number
+}
+
+export type PresencaCursoResponse = {
+  inscricao_id: number
+  aluno_id: number
+  curso_id: number
+  presenca_confirmada: boolean
+  data_inscricao?: string
 }

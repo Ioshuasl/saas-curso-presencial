@@ -1,5 +1,6 @@
 export * from './AdminCursoPage'
 export * from './AdminDashboardPage'
+export * from './AdminInscricaoPage'
 export * from './AdminUsersPage'
 export * from './AlunosPage'
 export * from './CatalogoPage'
