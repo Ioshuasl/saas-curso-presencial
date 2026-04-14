@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import {
-  refineHasTenantContext,
   tenantContextFields,
 } from './TenantContextSchema.js';
 
@@ -32,13 +31,22 @@ export const loginSchema = z
       .min(1, 'Informe o identificador (username, e-mail ou CPF)'),
     senha: z.string().min(1, 'Informe a senha'),
     ...tenantContextFields,
-  })
-  .superRefine(refineHasTenantContext);
+  });
 
 /** Cadastro por admin autenticado: tenant vem do JWT (`req.tenantId`), não do body. */
 export const adminCreateAuthenticatedSchema = z.object({
   ...usuarioBase,
   nome_completo: z.string().min(5, 'Nome muito curto'),
+});
+
+export const saasAdminCreateAuthenticatedSchema = z.object({
+  ...usuarioBase,
+  nome_completo: z.string().min(5, 'Nome muito curto'),
+  tenant_id: z.coerce
+    .number()
+    .int('tenant_id deve ser um número inteiro')
+    .positive('tenant_id deve ser maior que zero')
+    .optional(),
 });
 
 export const alunoCreateAuthenticatedSchema = z.object({
@@ -59,6 +67,11 @@ export const updateAdminSchema = z.object({
   ...usuarioBase,
   nome_completo: z.string().min(5, "Nome muito curto").optional(),
   ...tenantContextFields,
+}).partial();
+
+export const updateSaasAdminSchema = z.object({
+  ...usuarioBase,
+  nome_completo: z.string().min(5, 'Nome muito curto').optional(),
 }).partial();
 
 export const updateAlunoSchema = z.object({

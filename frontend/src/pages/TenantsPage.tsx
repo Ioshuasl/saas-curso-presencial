@@ -4,9 +4,16 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { TenantForm, TenantsList } from '../components'
+import type { TenantFormMode } from '../components/tenants/TenantForm'
 import { Button } from '../components/ui/Button'
 import { authService, tenantService } from '../services'
-import type { CreateTenantRequest, Tenant, TenantListQuery, UpdateTenantRequest } from '../types'
+import type {
+  CreateFirstTenantAdminRequest,
+  CreateTenantRequest,
+  Tenant,
+  TenantListQuery,
+  UpdateTenantRequest,
+} from '../types'
 
 type TenantFilterValue = {
   nome: string
@@ -28,6 +35,7 @@ export function TenantsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [formMode, setFormMode] = useState<TenantFormMode>('create_tenant')
   const [filters, setFilters] = useState<TenantFilterValue>({
     nome: '',
     status: 'all',
@@ -66,10 +74,20 @@ export function TenantsPage() {
     void loadTenants()
   }, [])
 
-  async function handleSubmit(payload: CreateTenantRequest | UpdateTenantRequest) {
+  async function handleSubmit(
+    payload: CreateTenantRequest | UpdateTenantRequest | CreateFirstTenantAdminRequest,
+  ) {
     setIsSubmitting(true)
     try {
-      if (selectedTenant) {
+      if (formMode === 'create_first_admin') {
+        if (!selectedTenant) {
+          throw new Error('Tenant não identificado para criar o primeiro administrador.')
+        }
+        await tenantService.criarPrimeiroAdmin(selectedTenant.id, payload as CreateFirstTenantAdminRequest)
+        if (import.meta.env.DEV) {
+          toast.success('Primeiro administrador cadastrado com sucesso.')
+        }
+      } else if (formMode === 'edit_tenant' && selectedTenant) {
         await tenantService.atualizarTenant(selectedTenant.id, payload as UpdateTenantRequest)
         if (import.meta.env.DEV) {
           toast.success('Tenant atualizado com sucesso.')
@@ -82,11 +100,16 @@ export function TenantsPage() {
       }
 
       setSelectedTenant(null)
+      setFormMode('create_tenant')
       setIsFormOpen(false)
       await loadTenants(filters)
-    } catch {
+    } catch (error) {
       if (import.meta.env.DEV) {
-        toast.error('Erro ao salvar tenant.')
+        const message =
+          error instanceof Error && error.message
+            ? error.message
+            : 'Erro ao salvar tenant.'
+        toast.error(message)
       }
     } finally {
       setIsSubmitting(false)
@@ -196,6 +219,7 @@ export function TenantsPage() {
           startIcon={<Plus size={16} />}
           onClick={() => {
             setSelectedTenant(null)
+            setFormMode('create_tenant')
             setIsFormOpen(true)
           }}
         >
@@ -205,11 +229,13 @@ export function TenantsPage() {
 
       <TenantForm
         isOpen={isFormOpen}
+        mode={formMode}
         selectedTenant={selectedTenant}
         isSubmitting={isSubmitting}
         onSubmit={handleSubmit}
         onClose={() => {
           setSelectedTenant(null)
+          setFormMode('create_tenant')
           setIsFormOpen(false)
         }}
       />
@@ -219,6 +245,12 @@ export function TenantsPage() {
         isLoading={isLoading}
         onEdit={(tenant) => {
           setSelectedTenant(tenant)
+          setFormMode('edit_tenant')
+          setIsFormOpen(true)
+        }}
+        onCreateFirstAdmin={(tenant) => {
+          setSelectedTenant(tenant)
+          setFormMode('create_first_admin')
           setIsFormOpen(true)
         }}
         onDelete={handleDelete}

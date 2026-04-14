@@ -6,6 +6,11 @@ import { Op, literal } from 'sequelize';
 import InscricaoService from '../services/InscricaoService.js';
 
 class UsuarioService {
+  ensureSaasAdmin(requesterRole) {
+    if (requesterRole !== 'SAAS_ADMIN') {
+      throw new Error('Acesso restrito a administradores SaaS');
+    }
+  }
 
   // --- CREATE ---
   async createAdmin(tenantId, dados) {
@@ -192,6 +197,80 @@ class UsuarioService {
     };
   }
 
+  async findAllSaasAdmins(params = {}, requesterRole) {
+    this.ensureSaasAdmin(requesterRole);
+    const {
+      page = 1,
+      limit = 10,
+      username,
+      email,
+      nome,
+      status,
+      tenant_id,
+      sort = 'id',
+      order = 'DESC',
+    } = params;
+
+    const allowedSort = ['id', 'username', 'email', 'status', 'tenant_id', 'created_at', 'nome_completo'];
+    const sortField = allowedSort.includes(sort) ? sort : 'id';
+    const sortOrder = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+    const offset = (pageNum - 1) * limitNum;
+
+    const where = { role: 'SAAS_ADMIN' };
+    if (username != null && String(username).trim() !== '') {
+      where.username = { [Op.iLike]: `%${String(username).trim()}%` };
+    }
+    if (email != null && String(email).trim() !== '') {
+      where.email = { [Op.iLike]: `%${String(email).trim()}%` };
+    }
+    if (status !== undefined && status !== '') {
+      where.status = status === 'true' || status === true;
+    }
+    if (tenant_id != null && String(tenant_id).trim() !== '') {
+      const tenantIdNum = parseInt(String(tenant_id), 10);
+      if (!Number.isNaN(tenantIdNum)) {
+        where.tenant_id = tenantIdNum;
+      }
+    }
+
+    const include = {
+      model: PerfilAdministrador,
+      as: 'perfil_admin',
+      attributes: ['usuario_id', 'nome_completo'],
+    };
+    if (nome != null && String(nome).trim() !== '') {
+      include.where = { nome_completo: { [Op.iLike]: `%${String(nome).trim()}%` } };
+      include.required = true;
+    }
+
+    const orderClause = sortField === 'nome_completo'
+      ? [[{ model: PerfilAdministrador, as: 'perfil_admin' }, 'nome_completo', sortOrder]]
+      : [[sortField, sortOrder]];
+
+    const { count, rows } = await Usuario.findAndCountAll({
+      where,
+      include: [include],
+      attributes: { exclude: ['senha_hash'] },
+      order: orderClause,
+      limit: limitNum,
+      offset,
+      distinct: true,
+    });
+
+    const totalPaginas = Math.ceil(count / limitNum) || 1;
+    return {
+      data: rows,
+      paginacao: {
+        total: count,
+        total_paginas: totalPaginas,
+        pagina: pageNum,
+        por_pagina: limitNum,
+      },
+    };
+  }
+
   async findAllAlunos(tenantId, params = {}) {
     const tid = requireTenantId(tenantId);
     const {
@@ -294,6 +373,15 @@ class UsuarioService {
     });
   }
 
+  async findSaasAdminById(id, requesterRole) {
+    this.ensureSaasAdmin(requesterRole);
+    return await Usuario.findOne({
+      where: { id, role: 'SAAS_ADMIN' },
+      include: { model: PerfilAdministrador, as: 'perfil_admin' },
+      attributes: { exclude: ['senha_hash'] },
+    });
+  }
+
   async findAlunoById(id, tenantId) {
     const tid = requireTenantId(tenantId);
     return await Usuario.findOne({
@@ -375,6 +463,68 @@ class UsuarioService {
     }
   }
 
+  async createSaasAdmin(requesterTenantId, requesterRole, dados) {
+    this.ensureSaasAdmin(requesterRole);
+    const targetTenantId = dados.tenant_id != null
+      ? requireTenantId(dados.tenant_id)
+      : requireTenantId(requesterTenantId);
+
+    const t = await sequelize.transaction();
+    try {
+      const clean = omitTenantContext(dados);
+      const { nome_completo, senha, ...usuarioFields } = clean;
+      const senha_hash = await gerarHash(senha);
+      const usuario = await Usuario.create(
+        { ...usuarioFields, senha_hash, role: 'SAAS_ADMIN', tenant_id: targetTenantId },
+        { transaction: t },
+      );
+      await PerfilAdministrador.create(
+        { usuario_id: usuario.id, nome_completo, tenant_id: targetTenantId },
+        { transaction: t },
+      );
+      await t.commit();
+      return usuario;
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
+  async updateSaasAdmin(id, requesterRole, dados) {
+    this.ensureSaasAdmin(requesterRole);
+    const t = await sequelize.transaction();
+    try {
+      const usuario = await Usuario.findOne({
+        where: { id, role: 'SAAS_ADMIN' },
+        transaction: t,
+      });
+      if (!usuario) throw new Error('Usuário SaaS não encontrado');
+
+      const dadosUsuario = {};
+      const dadosPerfil = {};
+
+      if (dados.username !== undefined) dadosUsuario.username = dados.username;
+      if (dados.email !== undefined) dadosUsuario.email = dados.email;
+      if (dados.cpf !== undefined) dadosUsuario.cpf = dados.cpf;
+      if (dados.status !== undefined) dadosUsuario.status = dados.status;
+      if (dados.senha) dadosUsuario.senha_hash = await gerarHash(dados.senha);
+      if (dados.nome_completo !== undefined) dadosPerfil.nome_completo = dados.nome_completo;
+
+      if (Object.keys(dadosUsuario).length > 0) {
+        await usuario.update(dadosUsuario, { transaction: t });
+      }
+      if (Object.keys(dadosPerfil).length > 0) {
+        await PerfilAdministrador.update(dadosPerfil, { where: { usuario_id: id }, transaction: t });
+      }
+
+      await t.commit();
+      return this.findSaasAdminById(id, requesterRole);
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
   async updateAluno(id, tenantId, dados) {
     const tid = requireTenantId(tenantId);
     const t = await sequelize.transaction();
@@ -423,25 +573,68 @@ class UsuarioService {
     return await usuario.destroy();
   }
 
+  async deleteSaasAdmin(id, requesterRole, requesterUserId) {
+    this.ensureSaasAdmin(requesterRole);
+    if (Number(id) === Number(requesterUserId)) {
+      throw new Error('Não é permitido excluir o próprio usuário SaaS');
+    }
+    const usuario = await Usuario.findOne({ where: { id, role: 'SAAS_ADMIN' } });
+    if (!usuario) throw new Error('Usuário SaaS não encontrado');
+    return await usuario.destroy();
+  }
+
   async login(identificador, senha, tenantCtx = {}) {
-    const tenant_id = await resolveTenantId(tenantCtx);
+    const hasTenantContext =
+      (tenantCtx?.tenant_id != null && String(tenantCtx.tenant_id).trim() !== '') ||
+      (tenantCtx?.tenant_slug != null && String(tenantCtx.tenant_slug).trim() !== '');
 
-    const usuario = await Usuario.findOne({
-      where: {
-        tenant_id,
-        [Op.or]: [
-          { username: identificador },
-          { email: identificador },
-          { cpf: identificador },
+    let usuario = null;
+
+    if (hasTenantContext) {
+      const tenant_id = await resolveTenantId(tenantCtx);
+
+      usuario = await Usuario.findOne({
+        where: {
+          tenant_id,
+          [Op.or]: [
+            { username: identificador },
+            { email: identificador },
+            { cpf: identificador },
+          ],
+        },
+        include: [
+          { model: PerfilAdministrador, as: 'perfil_admin' },
+          { model: PerfilAluno, as: 'perfil_aluno' },
         ],
-      },
-      include: [
-        { model: PerfilAdministrador, as: 'perfil_admin' },
-        { model: PerfilAluno, as: 'perfil_aluno' },
-      ],
-    });
+      });
+    }
 
-    if (!usuario) throw new Error('Usuário não encontrado');
+    // Permite que SAAS_ADMIN faça login mesmo quando o tenant_slug da URL
+    // aponta para outro tenant.
+    if (!usuario) {
+      usuario = await Usuario.findOne({
+        where: {
+          role: 'SAAS_ADMIN',
+          [Op.or]: [
+            { username: identificador },
+            { email: identificador },
+            { cpf: identificador },
+          ],
+        },
+        include: [
+          { model: PerfilAdministrador, as: 'perfil_admin' },
+          { model: PerfilAluno, as: 'perfil_aluno' },
+        ],
+        order: [['id', 'ASC']],
+      });
+    }
+
+    if (!usuario) {
+      if (!hasTenantContext) {
+        throw new Error('Informe tenant_id ou tenant_slug para login de administrador/aluno');
+      }
+      throw new Error('Usuário não encontrado');
+    }
     if (!usuario.status) throw new Error('Usuário inativo');
 
     const senhaValida = await compararHash(senha, usuario.senha_hash);

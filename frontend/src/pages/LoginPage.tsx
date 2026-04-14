@@ -41,16 +41,10 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
     setError(null)
     setIsSubmitting(true)
 
-    if (!detectedTenantSlug) {
-      setError('Tenant não identificado na URL. Use ?tenant_slug=seu-tenant para entrar.')
-      setIsSubmitting(false)
-      return
-    }
-
     try {
       const payload: LoginRequest = {
         ...form,
-        tenant_slug: detectedTenantSlug,
+        ...(detectedTenantSlug ? { tenant_slug: detectedTenantSlug } : {}),
       }
       const response = await authService.login(payload)
       const user = response.data.usuario
@@ -61,8 +55,17 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
       }
 
       onLoginSuccess({ user, role })
-    } catch {
-      setError('Não foi possível entrar. Verifique suas credenciais.')
+    } catch (error) {
+      const backendMessage =
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        typeof (error as { response?: { data?: { error?: string } } }).response?.data?.error ===
+          'string'
+          ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
+          : null
+
+      setError(backendMessage || 'Não foi possível entrar. Verifique suas credenciais.')
       if (import.meta.env.DEV) {
         toast.error('Falha no login. Confira as credenciais e o backend.')
       }
@@ -90,6 +93,9 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
               <span className="font-semibold text-slate-900 dark:text-slate-100">
                 {detectedTenantSlug || 'não identificado'}
               </span>
+              {!detectedTenantSlug
+                ? ' (SAAS_ADMIN pode entrar sem tenant; ADMIN/ALUNO precisam de tenant_slug).'
+                : ''}
             </p>
           ) : null}
 

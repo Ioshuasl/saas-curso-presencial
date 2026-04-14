@@ -152,6 +152,10 @@ export type CreateAdminRequest = {
   status?: boolean
 }
 
+export type CreateSaasAdminRequest = CreateAdminRequest & {
+  tenant_id?: number
+}
+
 export type CreateAlunoRequest = {
   tenant_id?: number
   username: string
@@ -167,6 +171,10 @@ export type CreateAlunoRequest = {
 
 export type UpdateAdminRequest = Partial<
   Omit<CreateAdminRequest, 'senha'> & { senha: string }
+>
+
+export type UpdateSaasAdminRequest = Partial<
+  Omit<CreateSaasAdminRequest, 'senha'> & { senha: string }
 >
 
 export type UpdateAlunoRequest = Partial<
@@ -205,6 +213,10 @@ export type AdminListItem = {
   perfil_admin: PerfilAdmin
 }
 
+export type SaasAdminListItem = AdminListItem & {
+  role: 'SAAS_ADMIN' | string
+}
+
 export type PaginacaoApi = {
   total: number
   total_paginas: number
@@ -214,6 +226,11 @@ export type PaginacaoApi = {
 
 export type AdminListResponse = {
   data: AdminListItem[]
+  paginacao: PaginacaoApi
+}
+
+export type SaasAdminListResponse = {
+  data: SaasAdminListItem[]
   paginacao: PaginacaoApi
 }
 

@@ -58,6 +58,20 @@ class TenantController {
       return res.status(400).json({ error: e.message });
     }
   }
+
+  async createFirstAdmin(req, res) {
+    try {
+      const user = await TenantService.createFirstAdmin(
+        req.params.id,
+        req.tenantId,
+        req.userRole,
+        req.body,
+      );
+      return res.status(201).json(user);
+    } catch (e) {
+      return res.status(400).json({ error: e.message });
+    }
+  }
 }
 
 export default new TenantController();

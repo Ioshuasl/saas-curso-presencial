@@ -118,3 +118,10 @@ export const adminOnly = (req, res, next) => {
   }
   return next();
 };
+
+export const saasAdminOnly = (req, res, next) => {
+  if (req.userRole !== 'SAAS_ADMIN') {
+    return res.status(403).json({ error: 'Acesso restrito a administradores SaaS' });
+  }
+  return next();
+};

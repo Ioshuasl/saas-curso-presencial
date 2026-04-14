@@ -17,6 +17,7 @@ import {
   MeusCursosPage,
   PagamentosPage,
   PerfilAlunoPage,
+  SaasAdminUsersPage,
   TenantConfigPage,
   TenantsPage,
 } from './pages'
@@ -60,6 +61,7 @@ function App() {
     '/inscricoes': 'Inscricoes',
     '/financeiro': 'Financeiro',
     '/tenants': 'Tenants',
+    '/saas-admins': 'Usuários SaaS',
     '/catalogo': 'Catalogo',
     '/meus-cursos': 'Meus Cursos',
     '/pagamentos': 'Pagamentos',
@@ -184,6 +186,7 @@ function App() {
         {currentRole === 'saas_admin' ? (
           <Routes>
             <Route path="/tenants" element={<TenantsPage />} />
+            <Route path="/saas-admins" element={<SaasAdminUsersPage />} />
             <Route path="*" element={<Navigate to="/tenants" replace />} />
           </Routes>
         ) : currentRole === 'admin' ? (

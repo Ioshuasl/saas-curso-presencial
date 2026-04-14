@@ -1,4 +1,4 @@
-import { CheckCircle2, LogIn, Pencil, Trash2, XCircle } from 'lucide-react'
+import { CheckCircle2, LogIn, Pencil, ShieldPlus, Trash2, XCircle } from 'lucide-react'
 
 import type { Tenant } from '../../types'
 
@@ -6,6 +6,7 @@ type TenantsListProps = {
   tenants: Tenant[]
   isLoading: boolean
   onEdit: (tenant: Tenant) => void
+  onCreateFirstAdmin: (tenant: Tenant) => void
   onDelete: (tenant: Tenant) => void
   onAccessTenant: (tenant: Tenant) => void
 }
@@ -14,6 +15,7 @@ export function TenantsList({
   tenants,
   isLoading,
   onEdit,
+  onCreateFirstAdmin,
   onDelete,
   onAccessTenant,
 }: TenantsListProps) {
@@ -71,6 +73,20 @@ export function TenantsList({
             </div>
 
             <div className="mt-4 flex items-center justify-end gap-2">
+              {!tenant.has_admin ? (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onCreateFirstAdmin(tenant)
+                  }}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-indigo-200 text-indigo-600 transition hover:bg-indigo-50 dark:border-indigo-900/70 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                  aria-label="Criar primeiro administrador"
+                  title="Criar primeiro administrador"
+                >
+                  <ShieldPlus size={16} />
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={(event) => {
@@ -126,6 +142,9 @@ export function TenantsList({
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Status
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  Admin
+                </th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Ações
                 </th>
@@ -155,8 +174,25 @@ export function TenantsList({
                       {tenant.ativo ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+                    {tenant.has_admin ? 'Configurado' : 'Sem administrador'}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
+                      {!tenant.has_admin ? (
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            onCreateFirstAdmin(tenant)
+                          }}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-indigo-200 text-indigo-600 transition hover:bg-indigo-50 dark:border-indigo-900/70 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                          aria-label="Criar primeiro administrador"
+                          title="Criar primeiro administrador"
+                        >
+                          <ShieldPlus size={16} />
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         onClick={(event) => {

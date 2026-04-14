@@ -1,13 +1,15 @@
 import { Router } from 'express';
 import UsuarioController from '../controllers/UsuarioController.js';
-import { authMiddleware, adminOnly } from '../middlewares/auth.js';
+import { authMiddleware, adminOnly, saasAdminOnly } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import {
   loginSchema,
   adminCreateAuthenticatedSchema,
   alunoCreateAuthenticatedSchema,
+  saasAdminCreateAuthenticatedSchema,
   updateAdminSchema,
   updateAlunoSchema,
+  updateSaasAdminSchema,
 } from '../schema/UsuarioSchema.js';
 
 const routes = new Router();
@@ -90,6 +92,7 @@ routes.post('/logout', UsuarioController.logout);
  *         description: Lista de admins
  */
 routes.get('/usuarios/admins', adminOnly, UsuarioController.indexAdmin);
+routes.get('/usuarios/saas-admins', saasAdminOnly, UsuarioController.indexSaasAdmin);
 /**
  * @swagger
  * /usuarios/alunos:
@@ -103,6 +106,30 @@ routes.get('/usuarios/admins', adminOnly, UsuarioController.indexAdmin);
  *         description: Lista de alunos
  */
 routes.get('/usuarios/alunos', adminOnly, UsuarioController.indexAluno);
+/**
+ * @swagger
+ * /usuarios/admin:
+ *   post:
+ *     summary: Cadastrar um novo administrador (tenant do token)
+ *     tags: [Usuários]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Admin criado
+ */
+routes.post(
+  '/usuarios/saas-admin',
+  saasAdminOnly,
+  validate(saasAdminCreateAuthenticatedSchema),
+  UsuarioController.storeSaasAdmin,
+);
 /**
  * @swagger
  * /usuarios/admin:
@@ -170,6 +197,7 @@ routes.post(
  *         description: Admin encontrado
  */
 routes.get('/usuarios/admin/:id', adminOnly, UsuarioController.showAdmin);
+routes.get('/usuarios/saas-admin/:id', saasAdminOnly, UsuarioController.showSaasAdmin);
 /**
  * @swagger
  * /usuarios/aluno/{id}:
@@ -190,7 +218,9 @@ routes.get('/usuarios/admin/:id', adminOnly, UsuarioController.showAdmin);
  */
 routes.get('/usuarios/aluno/:id', adminOnly, UsuarioController.showAluno);
 routes.put('/usuarios/admin/:id', adminOnly, validate(updateAdminSchema), UsuarioController.updateAdmin);
+routes.put('/usuarios/saas-admin/:id', saasAdminOnly, validate(updateSaasAdminSchema), UsuarioController.updateSaasAdmin);
 routes.put('/usuarios/aluno/:id', adminOnly, validate(updateAlunoSchema), UsuarioController.updateAluno);
 routes.delete('/usuarios/:id', adminOnly, UsuarioController.delete);
+routes.delete('/usuarios/saas-admin/:id', saasAdminOnly, UsuarioController.deleteSaasAdmin);
 
 export default routes;

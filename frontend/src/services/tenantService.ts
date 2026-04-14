@@ -1,6 +1,7 @@
 import { api } from './api'
 import type {
   Config,
+  CreateFirstTenantAdminRequest,
   CreateTenantRequest,
   Tenant,
   TenantListQuery,
@@ -12,6 +13,10 @@ import type {
 export const tenantService = {
   criarTenant(payload: CreateTenantRequest) {
     return api.post<Tenant>('/tenants', payload)
+  },
+
+  criarPrimeiroAdmin(tenantId: number, payload: CreateFirstTenantAdminRequest) {
+    return api.post(`/tenants/${tenantId}/first-admin`, payload)
   },
 
   listarTenants(params?: TenantListQuery) {

@@ -2,6 +2,15 @@ import UsuarioService from '../services/UsuarioService.js';
 import { resolveTenantIdForAdminRequest } from '../utils/tenantAdminContext.js';
 
 class UsuarioController {
+  async storeSaasAdmin(req, res) {
+    try {
+      const user = await UsuarioService.createSaasAdmin(req.tenantId, req.userRole, req.body);
+      return res.status(201).json(user);
+    } catch (e) {
+      return res.status(400).json({ error: e.message });
+    }
+  }
+
   async storeAdmin(req, res) {
     try {
       const tenantId = await resolveTenantIdForAdminRequest(req);
@@ -36,6 +45,15 @@ class UsuarioController {
     }
   }
 
+  async indexSaasAdmin(req, res) {
+    try {
+      const resultado = await UsuarioService.findAllSaasAdmins(req.query, req.userRole);
+      return res.json(resultado);
+    } catch (e) {
+      return res.status(500).json({ error: e.message || 'Erro ao buscar administradores SaaS' });
+    }
+  }
+
   async indexAluno(req, res) {
     try {
       const tenantId = await resolveTenantIdForAdminRequest(req);
@@ -49,6 +67,11 @@ class UsuarioController {
   async showAdmin(req, res) {
     const tenantId = await resolveTenantIdForAdminRequest(req);
     const user = await UsuarioService.findAdminById(req.params.id, tenantId);
+    return user ? res.json(user) : res.status(404).json({ error: 'Não encontrado' });
+  }
+
+  async showSaasAdmin(req, res) {
+    const user = await UsuarioService.findSaasAdminById(req.params.id, req.userRole);
     return user ? res.json(user) : res.status(404).json({ error: 'Não encontrado' });
   }
 
@@ -68,6 +91,15 @@ class UsuarioController {
     }
   }
 
+  async updateSaasAdmin(req, res) {
+    try {
+      const user = await UsuarioService.updateSaasAdmin(req.params.id, req.userRole, req.body);
+      return res.json(user);
+    } catch (e) {
+      return res.status(400).json({ error: e.message || 'Erro ao atualizar administrador SaaS' });
+    }
+  }
+
   async updateAluno(req, res) {
     try {
       const tenantId = await resolveTenantIdForAdminRequest(req);
@@ -82,6 +114,15 @@ class UsuarioController {
     try {
       const tenantId = await resolveTenantIdForAdminRequest(req);
       await UsuarioService.deleteUser(req.params.id, tenantId);
+      return res.status(204).send();
+    } catch (e) {
+      return res.status(400).json({ error: e.message });
+    }
+  }
+
+  async deleteSaasAdmin(req, res) {
+    try {
+      await UsuarioService.deleteSaasAdmin(req.params.id, req.userRole, req.userId);
       return res.status(204).send();
     } catch (e) {
       return res.status(400).json({ error: e.message });

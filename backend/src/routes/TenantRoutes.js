@@ -4,6 +4,7 @@ import { authMiddleware, adminOnly } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import {
   createTenantSchema,
+  createFirstAdminForTenantSchema,
   updateTenantSchema,
 } from '../schema/TenantSchema.js';
 
@@ -20,6 +21,11 @@ const routes = new Router();
 routes.use('/tenants', authMiddleware, adminOnly);
 
 routes.post('/tenants', validate(createTenantSchema), TenantController.store);
+routes.post(
+  '/tenants/:id/first-admin',
+  validate(createFirstAdminForTenantSchema),
+  TenantController.createFirstAdmin,
+);
 routes.get('/tenants', TenantController.index);
 routes.get('/tenants/:id', TenantController.show);
 routes.put('/tenants/:id', validate(updateTenantSchema), TenantController.update);

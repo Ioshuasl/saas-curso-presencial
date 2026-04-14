@@ -14,6 +14,7 @@ type SaasAdminLayoutProps = PropsWithChildren<{
 
 const saasAdminMenuItems: SidebarMenuItem[] = [
   { id: 'tenants', label: 'Tenants', path: '/tenants', icon: 'settings' },
+  { id: 'saas-users', label: 'Usuários', path: '/saas-admins', icon: 'users' },
 ]
 
 export function SaasAdminLayout({
