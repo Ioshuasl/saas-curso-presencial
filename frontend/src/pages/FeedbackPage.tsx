@@ -43,7 +43,7 @@ export function FeedbackPage() {
       setSelectedCursoId((prev) => prev ?? response.data[0]?.id ?? null)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar seus cursos para feedback.')
+        toast.error('Não foi possível carregar seus cursos para feedback.')
       }
     } finally {
       setIsLoading(false)
@@ -100,11 +100,11 @@ export function FeedbackPage() {
       })
       setQuestionarioInicialRespondido(true)
       if (import.meta.env.DEV) {
-        toast.success('Questionario inicial enviado com sucesso.')
+        toast.success('Questionário inicial enviado com sucesso.')
       }
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel enviar o questionario inicial.')
+        toast.error('Não foi possível enviar o questionário inicial.')
       }
     } finally {
       setIsSubmittingQuestionario(false)
@@ -116,7 +116,7 @@ export function FeedbackPage() {
     if (!selectedCursoId) return
 
     if (!questionarioInicialRespondido) {
-      toast.error('Responda e salve o questionario inicial antes do feedback final.')
+      toast.error('Responda e salve o questionário inicial antes do feedback final.')
       return
     }
 
@@ -133,7 +133,7 @@ export function FeedbackPage() {
       }
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel enviar o feedback final.')
+        toast.error('Não foi possível enviar o feedback final.')
       }
     } finally {
       setIsSubmittingFeedback(false)
@@ -153,10 +153,10 @@ export function FeedbackPage() {
     <section className="scrollbar-hide flex h-full min-h-0 flex-1 flex-col gap-6 overflow-y-auto md:gap-8">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-3xl">
-          Feedback e Questionarios
+          Feedback e Questionários
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Primeiro responda o questionario inicial; depois o feedback final fica disponivel.
+          Primeiro responda o questionário inicial; depois o feedback final fica disponível.
         </p>
       </div>
 
@@ -187,9 +187,9 @@ export function FeedbackPage() {
           void handleSubmitQuestionario(event)
         }}
       >
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Questionario inicial</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Questionário inicial</h3>
         <Textarea
-          label="Maior dor no inicio"
+          label="Maior dor no início"
           rows={3}
           required
           minLength={3}
@@ -209,7 +209,7 @@ export function FeedbackPage() {
           }}
         />
         <Button type="submit" isLoading={isSubmittingQuestionario} disabled={!selectedCursoId}>
-          Salvar questionario inicial
+          Salvar questionário inicial
         </Button>
       </form>
 
@@ -220,7 +220,7 @@ export function FeedbackPage() {
               <Lock size={18} />
             </span>
             <p className="max-w-sm text-sm font-medium text-slate-700 dark:text-slate-200">
-              Salve o questionario inicial deste curso para desbloquear o feedback final.
+              Salve o questionário inicial deste curso para desbloquear o feedback final.
             </p>
           </div>
         ) : null}

@@ -26,9 +26,7 @@ export type ContaPagarListQuery = TenantScopedQuery & {
   dataFim?: string
 }
 
-export type CreateContaPagarRequest = {
-  tenant_id?: number
-  tenant_slug?: string
+export type CreateContaPagarRequest = TenantScopedQuery & {
   curso_id?: number
   descricao: string
   valor: number

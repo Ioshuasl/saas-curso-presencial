@@ -94,7 +94,7 @@ export function AlunoUserForm({
         username: form.username,
         email: form.email,
         nome_completo: form.nome_completo,
-        telefone: form.telefone || undefined,
+        telefone: form.telefone.trim(),
         cidade: form.cidade || undefined,
         profissao: form.profissao || undefined,
         biografia: form.biografia || undefined,
@@ -113,7 +113,7 @@ export function AlunoUserForm({
       email: form.email,
       senha: form.senha,
       nome_completo: form.nome_completo,
-      telefone: form.telefone || undefined,
+      telefone: form.telefone.trim(),
       cidade: form.cidade || undefined,
       profissao: form.profissao || undefined,
       biografia: form.biografia || undefined,
@@ -146,7 +146,7 @@ export function AlunoUserForm({
               {isEditing ? 'Editar Cadastro' : 'Novo Aluno'}
             </h3>
             <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-              Informacoes pessoais e profissionais do aluno
+              Informações pessoais e profissionais do aluno
             </p>
           </div>
 
@@ -166,7 +166,7 @@ export function AlunoUserForm({
             <div className="space-y-6">
               <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
                 <span className="h-px w-5 bg-indigo-600 dark:bg-indigo-300" />
-                Dados obrigatorios
+                Dados obrigatórios
               </h4>
 
               <Input
@@ -174,7 +174,7 @@ export function AlunoUserForm({
                 value={form.nome_completo}
                 onChange={(event) => setForm((prev) => ({ ...prev, nome_completo: event.target.value }))}
                 startIcon={<UserIcon size={16} />}
-                placeholder="Ex: Joao da Silva"
+                placeholder="Ex: João da Silva"
                 required
               />
 
@@ -202,6 +202,7 @@ export function AlunoUserForm({
                 maskType="phone"
                 value={form.telefone}
                 onAccept={(value) => setForm((prev) => ({ ...prev, telefone: value }))}
+                required
               />
 
               <Input
@@ -210,7 +211,7 @@ export function AlunoUserForm({
                 value={form.senha}
                 onChange={(event) => setForm((prev) => ({ ...prev, senha: event.target.value }))}
                 startIcon={<Lock size={16} />}
-                placeholder={isEditing ? '••••••••' : 'Minimo 6 caracteres'}
+                placeholder={isEditing ? '••••••••' : 'Mínimo 6 caracteres'}
                 required={!isEditing}
                 helperText={isEditing ? 'Deixe em branco para manter a senha atual.' : undefined}
               />
@@ -219,7 +220,7 @@ export function AlunoUserForm({
             <div className="space-y-6">
               <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
                 <span className="h-px w-5 bg-indigo-600 dark:bg-indigo-300" />
-                Informacoes complementares
+                Informações complementares
               </h4>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -228,11 +229,11 @@ export function AlunoUserForm({
                   value={form.cidade}
                   onChange={(event) => setForm((prev) => ({ ...prev, cidade: event.target.value }))}
                   startIcon={<MapPin size={16} />}
-                  placeholder="Ex: Goiania"
+                  placeholder="Ex: Goiânia"
                 />
 
                 <Input
-                  label="Profissao"
+                label="Profissão"
                   value={form.profissao}
                   onChange={(event) => setForm((prev) => ({ ...prev, profissao: event.target.value }))}
                   startIcon={<Briefcase size={16} />}
@@ -242,10 +243,10 @@ export function AlunoUserForm({
 
               <div>
                 <Textarea
-                  label='Bio / "Fale sobre voce"'
+                  label='Bio / "Fale sobre você"'
                   value={form.biografia}
                   onChange={(event) => setForm((prev) => ({ ...prev, biografia: event.target.value }))}
-                  placeholder="Breve relato sobre as motivacoes do aluno..."
+                  placeholder="Breve relato sobre as motivações do aluno..."
                   rows={5}
                   className="[&_textarea]:rounded-2xl [&_textarea]:border-slate-200 [&_textarea]:bg-slate-50 [&_textarea]:px-4 [&_textarea]:py-3 [&_textarea]:font-medium dark:[&_textarea]:border-slate-700 dark:[&_textarea]:bg-slate-800/70"
                 />
@@ -269,7 +270,7 @@ export function AlunoUserForm({
             startIcon={<Save size={18} />}
             className="w-full rounded-2xl px-7 py-3 text-sm font-bold uppercase tracking-wider shadow-xl shadow-indigo-200/40 sm:w-auto dark:shadow-indigo-950/40"
           >
-            {isEditing ? 'Salvar alteracoes' : 'Salvar aluno'}
+            {isEditing ? 'Salvar alterações' : 'Salvar aluno'}
           </Button>
         </div>
       </form>

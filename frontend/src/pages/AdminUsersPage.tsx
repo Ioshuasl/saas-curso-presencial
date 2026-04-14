@@ -57,7 +57,7 @@ export function AdminUsersPage() {
       setPagination(response.data.paginacao)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar a lista de administradores.')
+        toast.error('Não foi possível carregar a lista de administradores.')
       }
     } finally {
       setIsLoading(false)
@@ -71,7 +71,7 @@ export function AdminUsersPage() {
   async function handleSubmit(payload: CreateAdminRequest | UpdateAdminRequest) {
     if (!activeTenantSlug) {
       if (import.meta.env.DEV) {
-        toast.error('Tenant ativo nao identificado. Faca login novamente.')
+        toast.error('Tenant ativo não identificado. Faça login novamente.')
       }
       return
     }
@@ -115,12 +115,12 @@ export function AdminUsersPage() {
     try {
       await usuarioService.deletarUsuario(admin.id)
       if (import.meta.env.DEV) {
-        toast.success('Administrador excluido com sucesso.')
+        toast.success('Administrador excluído com sucesso.')
       }
       await loadAdmins(filters, currentPage)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel excluir o administrador.')
+        toast.error('Não foi possível excluir o administrador.')
       }
     }
   }
@@ -134,7 +134,7 @@ export function AdminUsersPage() {
               Base de Administradores
             </h2>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Gestao de administradores cadastrados, com filtros e edicao rapida.
+              Gestão de administradores cadastrados, com filtros e edição rápida.
             </p>
           </div>
 

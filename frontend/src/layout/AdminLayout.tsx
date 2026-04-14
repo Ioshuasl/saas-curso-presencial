@@ -15,11 +15,11 @@ type AdminLayoutProps = PropsWithChildren<{
 const adminMenuItems: SidebarMenuItem[] = [
   { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
   { id: 'courses', label: 'Cursos', path: '/cursos', icon: 'book-open' },
-  { id: 'enrollments', label: 'Inscricoes', path: '/inscricoes', icon: 'bar-chart' },
+  { id: 'enrollments', label: 'Inscrições', path: '/inscricoes', icon: 'bar-chart' },
   { id: 'students', label: 'Alunos', path: '/alunos', icon: 'users' },
   { id: 'financial', label: 'Financeiro', path: '/financeiro', icon: 'wallet' },
-  { id: 'user', label: 'Usuario', path: '/admins', icon: 'user-circle' },
-  { id: 'settings', label: 'Configuracoes', path: '/configuracoes', icon: 'settings' },
+  { id: 'user', label: 'Usuários', path: '/admins', icon: 'user-circle' },
+  { id: 'settings', label: 'Configurações', path: '/configuracoes', icon: 'settings' },
 ]
 
 export function AdminLayout({

@@ -62,7 +62,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
       onLoginSuccess({ user, role })
     } catch {
-      setError('Nao foi possivel entrar. Verifique suas credenciais.')
+      setError('Não foi possível entrar. Verifique suas credenciais.')
       if (import.meta.env.DEV) {
         toast.error('Falha no login. Confira as credenciais e o backend.')
       }
@@ -100,7 +100,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
             <div className="relative">
               <User
                 size={16}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
               />
               <input
                 id="identificador"
@@ -113,8 +113,8 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                   }))
                 }
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/60"
-                placeholder="E-mail ou Usuario"
+                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-900/70"
+                placeholder="E-mail ou usuário"
               />
             </div>
           </div>
@@ -126,7 +126,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
             <div className="relative">
               <Lock
                 size={16}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
               />
               <input
                 id="senha"
@@ -139,13 +139,13 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                   }))
                 }
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/60"
+                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-900/70"
                 placeholder="Sua senha"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-200"
                 aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}

@@ -1,7 +1,9 @@
 import { Briefcase, CalendarDays, MapPin, Plus, Save, Trash2, User as UserIcon, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 import type { CreateCursoRequest, CreateCursoSessaoRequest, Curso, UpdateCursoRequest } from '../../types'
+import { consultarCepViaReceitaWs } from '../../utils/cepReceitaWs'
 import { Button } from '../ui/Button'
 import { DatePicker } from '../ui/DatePicker'
 import { ImagePicker } from '../ui/ImagePicker'
@@ -57,6 +59,22 @@ function toDateInputValue(date: Date | null): string {
   return `${year}-${month}-${day}`
 }
 
+function onlyDigits(value: string) {
+  return String(value ?? '').replace(/\D/g, '')
+}
+
+function buildLocalFromCepLookup(payload: {
+  endereco?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+}) {
+  const linhaBase = [payload.endereco, payload.bairro].filter(Boolean).join(', ')
+  const cidadeUf = [payload.cidade, payload.estado].filter(Boolean).join(' - ')
+  if (linhaBase && cidadeUf) return `${linhaBase} - ${cidadeUf}`
+  return linhaBase || cidadeUf || ''
+}
+
 const initialState: FormState = {
   nome: '',
   ministrante: '',
@@ -82,6 +100,9 @@ export function CursoForm({
   const [isVisible, setIsVisible] = useState(false)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [removeCurrentImage, setRemoveCurrentImage] = useState(false)
+  const [isCepLookupLoading, setIsCepLookupLoading] = useState(false)
+  const lastCepLookupRef = useRef('')
+  const localInputRef = useRef('')
 
   useEffect(() => {
     if (!selectedCurso) {
@@ -113,6 +134,7 @@ export function CursoForm({
     })
     setImagePreviewUrl(selectedCurso.url_imagem ?? null)
     setRemoveCurrentImage(false)
+    localInputRef.current = selectedCurso.local ?? ''
   }, [selectedCurso])
 
   useEffect(() => {
@@ -156,6 +178,31 @@ export function CursoForm({
     })
   }
 
+  async function handleBuscarEnderecoPorCep(rawValue: string) {
+    const normalizedCep = onlyDigits(rawValue)
+    if (normalizedCep.length !== 8) {
+      return
+    }
+    if (lastCepLookupRef.current === normalizedCep) return
+    lastCepLookupRef.current = normalizedCep
+
+    setIsCepLookupLoading(true)
+    try {
+      const result = await consultarCepViaReceitaWs(normalizedCep)
+      const localMontado = buildLocalFromCepLookup(result)
+      if (!localMontado) {
+        return
+      }
+      if (localInputRef.current !== rawValue) return
+      setForm((prev) => ({ ...prev, local: localMontado }))
+      localInputRef.current = localMontado
+    } catch {
+      toast.error('Não foi possível consultar o CEP informado.')
+    } finally {
+      setIsCepLookupLoading(false)
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -165,7 +212,7 @@ export function CursoForm({
     )
 
     if (!sessoesValidas.length) {
-      window.alert('Adicione ao menos uma sessao com data e horarios.')
+      window.alert('Adicione ao menos uma sessão com data e horários.')
       return
     }
 
@@ -220,7 +267,7 @@ export function CursoForm({
               {isEditing ? 'Editar Curso' : 'Novo Curso'}
             </h3>
             <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400 md:text-[13px]">
-              Informacoes de cadastro e disponibilidade do curso
+              Informações de cadastro e disponibilidade do curso
             </p>
           </div>
           <button
@@ -259,11 +306,24 @@ export function CursoForm({
               <Input
                 label="Local"
                 value={form.local}
-                onChange={(event) => setForm((prev) => ({ ...prev, local: event.target.value }))}
+                onChange={(event) => {
+                  const nextValue = event.target.value
+                  localInputRef.current = nextValue
+                  setForm((prev) => ({ ...prev, local: nextValue }))
+
+                  const hasLetters = /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(nextValue)
+                  if (hasLetters) return
+                  void handleBuscarEnderecoPorCep(nextValue)
+                }}
                 startIcon={<MapPin size={16} />}
                 className="md:[&_input]:rounded-2xl md:[&_input]:border-slate-100 md:[&_input]:bg-slate-50 md:[&_input]:pr-5 md:[&_input]:py-3.5 md:[&_input]:font-semibold dark:md:[&_input]:border-slate-700 dark:md:[&_input]:bg-slate-800/60"
                 required
               />
+              {isCepLookupLoading ? (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Buscando endereço pelo CEP...
+                </p>
+              ) : null}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <CurrencyInput
                   label="Valor"
@@ -297,17 +357,17 @@ export function CursoForm({
                   }
                 }}
                 previewUrl={imagePreviewUrl}
-                helperText="JPG, PNG ou WEBP com no maximo 10MB."
+                helperText="JPG, PNG ou WEBP com no máximo 10MB."
               />
               <Textarea
-                label="Descricao"
+                label="Descrição"
                 value={form.descricao}
                 onChange={(event) => setForm((prev) => ({ ...prev, descricao: event.target.value }))}
                 rows={5}
                 className="[&_textarea]:rounded-2xl [&_textarea]:border-slate-200 [&_textarea]:bg-slate-50 [&_textarea]:px-4 [&_textarea]:py-3 [&_textarea]:font-medium dark:[&_textarea]:border-slate-700 dark:[&_textarea]:bg-slate-800/70 md:[&_textarea]:border-slate-100 md:[&_textarea]:px-5 md:[&_textarea]:py-4 md:[&_textarea]:font-semibold dark:md:[&_textarea]:border-slate-700 dark:md:[&_textarea]:bg-slate-800/60"
               />
               <Textarea
-                label="Conteudo"
+                label="Conteúdo"
                 value={form.conteudo}
                 onChange={(event) => setForm((prev) => ({ ...prev, conteudo: event.target.value }))}
                 rows={5}
@@ -316,7 +376,7 @@ export function CursoForm({
               <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-700 dark:bg-slate-800/40 md:rounded-3xl md:border-slate-100 md:bg-slate-50/90 md:px-5 md:py-4 dark:md:border-slate-700 dark:md:bg-slate-800/50">
                 <Switch
                   label={form.status ? 'Curso ativo' : 'Curso inativo'}
-                  description={form.status ? 'Visivel para inscricoes.' : 'Oculto para novas inscricoes.'}
+                  description={form.status ? 'Visível para inscrições.' : 'Oculto para novas inscrições.'}
                   checked={form.status}
                   onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
                 />
@@ -326,7 +386,7 @@ export function CursoForm({
             <div className="space-y-4 md:max-h-[64dvh] md:overflow-y-auto md:space-y-6 md:scrollbar-hide md:pr-1">
               <div>
                 <p className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-                  Sessoes do Curso
+                  Sessões do Curso
                 </p>
               </div>
 
@@ -336,10 +396,10 @@ export function CursoForm({
                     <CalendarDays size={16} className="text-indigo-500" />
                     <div>
                       <p className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Sessoes
+                        Sessões
                       </p>
                       <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
-                        {totalSessoes} {totalSessoes === 1 ? 'sessao cadastrada' : 'sessoes cadastradas'}
+                        {totalSessoes} {totalSessoes === 1 ? 'sessão cadastrada' : 'sessões cadastradas'}
                       </p>
                     </div>
                   </div>
@@ -361,14 +421,14 @@ export function CursoForm({
                     >
                       <div className="mb-3 flex items-center justify-between">
                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                          Sessao {index + 1}
+                          Sessão {index + 1}
                         </span>
                         <button
                           type="button"
                           onClick={() => removeSessao(index)}
                           disabled={form.sessoes.length <= 1}
                           className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-rose-950/40"
-                          aria-label="Remover sessao"
+                          aria-label="Remover sessão"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -385,7 +445,7 @@ export function CursoForm({
                         />
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                           <TimePicker
-                            label="Inicio"
+                            label="Início"
                             value={sessao.horario_inicio}
                             onChange={(time) => updateSessao(index, { horario_inicio: time ?? '' })}
                             required
@@ -425,7 +485,7 @@ export function CursoForm({
             startIcon={<Save size={18} />}
             className="w-full rounded-2xl px-7 py-3 text-sm font-bold uppercase tracking-wider shadow-xl shadow-indigo-200/40 sm:w-auto md:px-10 md:py-3.5 dark:shadow-indigo-950/40"
           >
-            {isEditing ? 'Salvar alteracoes' : 'Salvar curso'}
+            {isEditing ? 'Salvar alterações' : 'Salvar curso'}
           </Button>
         </div>
       </form>

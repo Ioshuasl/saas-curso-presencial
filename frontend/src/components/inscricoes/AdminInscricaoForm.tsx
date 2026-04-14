@@ -83,7 +83,7 @@ export function AdminInscricaoForm({
       >
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Nova inscricao</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Nova inscrição</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Selecione o curso e o aluno para cadastrar.
             </p>
@@ -136,7 +136,7 @@ export function AdminInscricaoForm({
             startIcon={<Save size={16} />}
             disabled={!cursoId || !alunoId}
           >
-            Salvar inscricao
+            Salvar inscrição
           </Button>
         </div>
       </form>

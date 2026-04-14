@@ -11,18 +11,18 @@ const adminCards = [
   },
   {
     title: 'Financeiro',
-    description: 'Controlar contas a pagar/receber e acompanhar lucro liquido.',
+    description: 'Controlar contas a pagar/receber e acompanhar lucro líquido.',
   },
   {
     title: 'Alunos',
-    description: 'Gerenciar matriculas e validar pagamento via WhatsApp.',
+    description: 'Gerenciar matrículas e validar pagamento via WhatsApp.',
   },
 ]
 
 const studentCards = [
   {
-    title: 'Catalogo',
-    description: 'Visualizar cursos ativos e iniciar inscricao rapidamente.',
+    title: 'Catálogo',
+    description: 'Visualizar cursos ativos e iniciar inscrição rapidamente.',
   },
   {
     title: 'Meus cursos',
@@ -30,7 +30,7 @@ const studentCards = [
   },
   {
     title: 'Feedback',
-    description: 'Responder questionarios e avaliar a experiencia.',
+    description: 'Responder questionários e avaliar a experiência.',
   },
 ]
 
@@ -44,7 +44,7 @@ export function HomePage({ role }: HomePageProps) {
           {role === 'admin' ? 'Painel do Administrador' : 'Painel do Aluno'}
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300 md:text-base">
-          Base dos layouts criada com foco em navegacao responsiva para celular e
+          Base dos layouts criada com foco em navegação responsiva para celular e
           desktop, com suporte aos temas claro e escuro.
         </p>
       </div>

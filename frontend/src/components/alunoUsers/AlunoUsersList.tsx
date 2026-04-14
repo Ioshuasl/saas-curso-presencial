@@ -40,7 +40,7 @@ export function AlunoUsersList({ alunos, isLoading, onEdit, onDelete, className 
     } catch {
       setAlunoDetalhe(null)
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar as inscricoes do aluno.')
+        toast.error('Não foi possível carregar as inscrições do aluno.')
       }
     } finally {
       setIsInsightsLoading(false)
@@ -198,7 +198,7 @@ export function AlunoUsersList({ alunos, isLoading, onEdit, onDelete, className 
                     className="h-3.5 w-3.5 shrink-0 text-indigo-500 transition-colors group-hover/btn:text-white md:h-3 md:w-3"
                     aria-hidden
                   />
-                  Ver inscricoes
+                  Ver inscrições
                   <ArrowRight
                     className="h-3 w-3 shrink-0 opacity-0 transition-all group-hover/btn:translate-x-0.5 group-hover/btn:opacity-100"
                     aria-hidden

@@ -238,7 +238,7 @@ export function ContaPagarForm({
             <div className="space-y-6">
               <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
                 <span className="h-px w-5 bg-indigo-600 dark:bg-indigo-300" />
-                Dados obrigatorios
+                Dados obrigatórios
               </h4>
 
               <Input
@@ -298,7 +298,7 @@ export function ContaPagarForm({
             <div className="space-y-6">
               <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
                 <span className="h-px w-5 bg-indigo-600 dark:bg-indigo-300" />
-                Status e observacoes
+                Status e observações
               </h4>
 
               <RadioGroup
@@ -317,17 +317,17 @@ export function ContaPagarForm({
                     {form.status === 'PAGO'
                       ? 'Informe a data de pagamento.'
                       : form.status === 'ATRASADO'
-                        ? 'O pagamento esta em atraso.'
-                        : 'A despesa ainda nao foi paga.'}
+                        ? 'O pagamento está em atraso.'
+                        : 'A despesa ainda não foi paga.'}
                   </span>
                 </div>
               </div>
 
               <Textarea
-                label="Observacoes (opcional)"
+                label="Observações (opcional)"
                 value={form.observacao}
                 onChange={(event) => setForm((prev) => ({ ...prev, observacao: event.target.value }))}
-                placeholder="Anotacoes sobre esta despesa..."
+                placeholder="Anotações sobre esta despesa..."
                 rows={5}
                 autoResize={false}
                 className="[&_textarea]:rounded-2xl [&_textarea]:border-slate-200 [&_textarea]:bg-slate-50 [&_textarea]:px-4 [&_textarea]:py-3 [&_textarea]:font-medium dark:[&_textarea]:border-slate-700 dark:[&_textarea]:bg-slate-800/70"
@@ -351,7 +351,7 @@ export function ContaPagarForm({
             startIcon={<Save size={18} />}
             className="w-full rounded-2xl px-7 py-3 text-sm font-bold uppercase tracking-wider shadow-xl shadow-indigo-200/40 sm:w-auto dark:shadow-indigo-950/40"
           >
-            {isEditing ? 'Salvar alteracoes' : 'Salvar conta'}
+            {isEditing ? 'Salvar alterações' : 'Salvar conta'}
           </Button>
         </div>
       </form>

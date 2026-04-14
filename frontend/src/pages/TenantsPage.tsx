@@ -55,7 +55,7 @@ export function TenantsPage() {
       setPagination(response.data.paginacao)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar a lista de tenants.')
+        toast.error('Não foi possível carregar a lista de tenants.')
       }
     } finally {
       setIsLoading(false)
@@ -102,12 +102,12 @@ export function TenantsPage() {
     try {
       await tenantService.deletarTenant(tenant.id)
       if (import.meta.env.DEV) {
-        toast.success('Tenant excluido com sucesso.')
+        toast.success('Tenant excluído com sucesso.')
       }
       await loadTenants(filters)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel excluir o tenant.')
+        toast.error('Não foi possível excluir o tenant.')
       }
     }
   }
@@ -227,7 +227,7 @@ export function TenantsPage() {
 
       {pagination ? (
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Total: {pagination.total} tenant(s) - Pagina {pagination.pagina} de{' '}
+          Total: {pagination.total} tenant(s) - Página {pagination.pagina} de{' '}
           {pagination.total_paginas}
         </p>
       ) : null}

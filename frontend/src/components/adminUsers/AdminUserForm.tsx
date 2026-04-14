@@ -135,7 +135,7 @@ export function AdminUserForm({
               {isEditing ? 'Editar Cadastro' : 'Novo Administrador'}
             </h3>
             <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-              Informacoes de acesso e permissao do administrador
+              Informações de acesso e permissão do administrador
             </p>
           </div>
 
@@ -155,7 +155,7 @@ export function AdminUserForm({
             <div className="space-y-6">
               <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
                 <span className="h-px w-5 bg-indigo-600 dark:bg-indigo-300" />
-                Dados obrigatorios
+                Dados obrigatórios
               </h4>
 
               <Input
@@ -190,7 +190,7 @@ export function AdminUserForm({
             <div className="space-y-6">
               <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
                 <span className="h-px w-5 bg-indigo-600 dark:bg-indigo-300" />
-                Seguranca e status
+                Segurança e status
               </h4>
 
               <MaskedInput
@@ -216,8 +216,8 @@ export function AdminUserForm({
                   label={form.status ? 'Administrador ativo' : 'Administrador inativo'}
                   description={
                     form.status
-                      ? 'Usuario liberado para acessar o sistema.'
-                      : 'Usuario bloqueado para acesso ao sistema.'
+                      ? 'Usuário liberado para acessar o sistema.'
+                      : 'Usuário bloqueado para acesso ao sistema.'
                   }
                   checked={form.status}
                   onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
@@ -249,7 +249,7 @@ export function AdminUserForm({
             startIcon={<Save size={18} />}
             className="w-full rounded-2xl px-7 py-3 text-sm font-bold uppercase tracking-wider shadow-xl shadow-indigo-200/40 sm:w-auto dark:shadow-indigo-950/40"
           >
-            {isEditing ? 'Salvar alteracoes' : 'Salvar administrador'}
+            {isEditing ? 'Salvar alterações' : 'Salvar administrador'}
           </Button>
         </div>
       </form>

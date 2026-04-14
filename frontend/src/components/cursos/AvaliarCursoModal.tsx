@@ -104,9 +104,9 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
         principal_expectativa: expectativa,
       })
       setQuestionarioInicialRespondido(true)
-      toast.success('Questionario inicial salvo.')
+      toast.success('Questionário inicial salvo.')
     } catch {
-      toast.error('Nao foi possivel salvar o questionario inicial.')
+      toast.error('Não foi possível salvar o questionário inicial.')
     } finally {
       setIsSavingQuestionario(false)
     }
@@ -115,7 +115,7 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
   async function handleSalvarFeedback(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!questionarioInicialRespondido) {
-      toast.error('Responda e salve o questionario inicial antes do feedback final.')
+      toast.error('Responda e salve o questionário inicial antes do feedback final.')
       return
     }
 
@@ -129,7 +129,7 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
       })
       toast.success('Feedback final salvo.')
     } catch {
-      toast.error('Nao foi possivel salvar o feedback final.')
+      toast.error('Não foi possível salvar o feedback final.')
     } finally {
       setIsSavingFeedback(false)
     }
@@ -149,13 +149,13 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
           <div className="min-w-0">
             <p className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
               <MessageSquareText size={13} />
-              Avaliacao do aluno
+              Avaliação do aluno
             </p>
             <h3 className="mt-2 truncate text-lg font-semibold text-slate-900 dark:text-slate-100 sm:text-xl">
               {curso.nome}
             </h3>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
-              Primeiro salve o questionario inicial. Depois disso o feedback final fica disponivel.
+              Primeiro salve o questionário inicial. Depois disso o feedback final fica disponível.
             </p>
           </div>
 
@@ -172,7 +172,7 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
         <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/60 p-4 dark:bg-slate-950/40 sm:p-6">
           {isLoadingData ? (
             <div className="mb-4 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-900/20 dark:text-indigo-300">
-              Carregando dados da avaliacao...
+              Carregando dados da avaliação...
             </div>
           ) : null}
 
@@ -186,21 +186,21 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300">
                     <ClipboardList size={16} />
                   </span>
-                  Questionario inicial
+                  Questionário inicial
                 </h4>
                 {questionarioInicialRespondido ? (
                   <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
-                    Concluido
+                    Concluído
                   </span>
                 ) : (
                   <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                    Obrigatorio primeiro
+                    Obrigatório primeiro
                   </span>
                 )}
               </div>
               <div className="space-y-3">
                 <Textarea
-                  label="Maior dor no inicio"
+                  label="Maior dor no início"
                   rows={4}
                   required
                   minLength={3}
@@ -222,7 +222,7 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
               </div>
               <div className="mt-4 flex justify-end">
                 <Button type="submit" isLoading={isSavingQuestionario}>
-                  Salvar questionario inicial
+                  Salvar questionário inicial
                 </Button>
               </div>
             </form>
@@ -234,7 +234,7 @@ export function AvaliarCursoModal({ curso, isOpen, onClose }: AvaliarCursoModalP
                     <Lock size={18} />
                   </span>
                   <p className="max-w-xs text-sm font-medium text-slate-700 dark:text-slate-200">
-                    Salve o questionario inicial para desbloquear o feedback final.
+                    Salve o questionário inicial para desbloquear o feedback final.
                   </p>
                 </div>
               ) : null}

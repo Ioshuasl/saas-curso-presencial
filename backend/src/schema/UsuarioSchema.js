@@ -44,7 +44,7 @@ export const adminCreateAuthenticatedSchema = z.object({
 export const alunoCreateAuthenticatedSchema = z.object({
   ...usuarioBase,
   nome_completo: z.string().min(5, 'Nome muito curto'),
-  telefone: z.string().optional(),
+  telefone: z.string().trim().min(1, 'Telefone é obrigatório'),
   cidade: z.string().optional(),
   profissao: z.string().optional(),
   biografia: z.string().max(500, 'Biografia muito longa').optional(),
@@ -64,7 +64,7 @@ export const updateAdminSchema = z.object({
 export const updateAlunoSchema = z.object({
   ...usuarioBase,
   nome_completo: z.string().min(5, "Nome muito curto").optional(),
-  telefone: z.string().optional(),
+  telefone: z.string().trim().min(1, "Telefone não pode ficar vazio").optional(),
   cidade: z.string().optional(),
   profissao: z.string().optional(),
   biografia: z.string().max(500, "Biografia muito longa").optional(),

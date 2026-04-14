@@ -41,7 +41,7 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
       const response = await inscricaoService.listarInscricoesPorCurso(curso.id)
       setCursoComInscritos(response.data as CursoComInscritos)
     } catch {
-      setInscricoesError('Nao foi possivel carregar as inscricoes deste curso.')
+      setInscricoesError('Não foi possível carregar as inscrições deste curso.')
     } finally {
       setIsLoadingInscricoes(false)
     }
@@ -121,7 +121,7 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
                   Vagas preenchidas: {vagasPreenchidas}
                 </span>
                 <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
-                  Vagas disponiveis: {vagasDisponiveis}
+                  Vagas disponíveis: {vagasDisponiveis}
                 </span>
               </div>
 
@@ -148,8 +148,8 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
                     void handleVisualizarInscricoes(curso)
                   }}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-sky-50 hover:text-sky-600 dark:text-slate-500 dark:hover:bg-sky-900/30 dark:hover:text-sky-300"
-                  aria-label="Visualizar inscricoes"
-                  title="Visualizar inscricoes"
+                  aria-label="Visualizar inscrições"
+                  title="Visualizar inscrições"
                 >
                   <Eye size={16} />
                 </button>
@@ -195,7 +195,7 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800">
               <div className="min-w-0">
                 <h3 className="truncate text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Inscricoes do curso
+                  Inscrições do curso
                 </h3>
                 <p className="mt-0.5 truncate text-xs font-medium text-slate-500 dark:text-slate-400">
                   {cursoComInscritos?.nome ?? cursoSelecionado?.nome ?? '-'}
@@ -213,7 +213,7 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto scrollbar-hide bg-slate-50/40 p-4 dark:bg-slate-950/40 md:p-6">
               {isLoadingInscricoes ? (
                 <div className="rounded-2xl border border-slate-200 bg-white px-4 py-8 text-center text-sm font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                  Carregando inscricoes...
+                  Carregando inscrições...
                 </div>
               ) : inscricoesError ? (
                 <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-8 text-center text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-900/20 dark:text-rose-300">
@@ -250,14 +250,14 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
                           }`}
                         >
                           <UserRound size={12} />
-                          {inscricao?.presenca_confirmada ? 'Presenca confirmada' : 'Presenca pendente'}
+                          {inscricao?.presenca_confirmada ? 'Presença confirmada' : 'Presença pendente'}
                         </span>
                       </div>
 
                       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                         <span>ID do aluno: {aluno.id}</span>
                         <span>CPF: {aluno.cpf || '-'}</span>
-                        <span>Data da inscricao: {dataInscricao}</span>
+                        <span>Data da inscrição: {dataInscricao}</span>
                       </div>
                     </article>
                   )
@@ -268,7 +268,7 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
                     Nenhum aluno inscrito neste curso
                   </p>
                   <p className="mt-1 text-xs font-medium text-slate-400 dark:text-slate-500">
-                    Assim que houver inscricoes, elas aparecerao aqui.
+                    Assim que houver inscrições, elas aparecerão aqui.
                   </p>
                 </div>
               )}

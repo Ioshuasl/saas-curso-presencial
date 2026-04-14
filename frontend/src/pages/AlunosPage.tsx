@@ -59,7 +59,7 @@ export function AlunosPage() {
       setPagination(payload.paginacao)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar a lista de alunos.')
+        toast.error('Não foi possível carregar a lista de alunos.')
       }
     } finally {
       setIsLoading(false)
@@ -73,7 +73,7 @@ export function AlunosPage() {
   async function handleSubmit(payload: CreateAlunoRequest | UpdateAlunoRequest) {
     if (!activeTenantSlug) {
       if (import.meta.env.DEV) {
-        toast.error('Tenant ativo nao identificado. Faca login novamente.')
+        toast.error('Tenant ativo não identificado. Faça login novamente.')
       }
       return
     }
@@ -117,12 +117,12 @@ export function AlunosPage() {
     try {
       await usuarioService.deletarUsuario(aluno.id)
       if (import.meta.env.DEV) {
-        toast.success('Aluno excluido com sucesso.')
+        toast.success('Aluno excluído com sucesso.')
       }
       await loadAlunos(filters, currentPage)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel excluir o aluno.')
+        toast.error('Não foi possível excluir o aluno.')
       }
     }
   }
@@ -136,7 +136,7 @@ export function AlunosPage() {
               Base de Alunos
             </h2>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Gestao de alunos cadastrados, com filtros e edicao rapida.
+              Gestão de alunos cadastrados, com filtros e edição rápida.
             </p>
           </div>
 

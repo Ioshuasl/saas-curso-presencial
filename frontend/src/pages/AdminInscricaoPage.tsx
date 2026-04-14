@@ -44,7 +44,7 @@ export function AdminInscricaoPage() {
       setSelectedCursoId((prev) => prev ?? cursosList[0]?.id ?? null)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar os dados de inscricoes.')
+        toast.error('Não foi possível carregar os dados de inscrições.')
       }
     } finally {
       setIsLoadingBase(false)
@@ -59,7 +59,7 @@ export function AdminInscricaoPage() {
     } catch {
       setCursoComInscritos(null)
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar as inscricoes do curso selecionado.')
+        toast.error('Não foi possível carregar as inscrições do curso selecionado.')
       }
     } finally {
       setIsLoadingInscricoes(false)
@@ -80,13 +80,13 @@ export function AdminInscricaoPage() {
     try {
       await inscricaoService.criarInscricao(payload)
       if (import.meta.env.DEV) {
-        toast.success('Inscricao criada com sucesso.')
+        toast.success('Inscrição criada com sucesso.')
       }
       setIsFormOpen(false)
       await loadInscricoesByCurso(payload.curso_id)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel criar a inscricao.')
+        toast.error('Não foi possível criar a inscrição.')
       }
     } finally {
       setIsSubmitting(false)
@@ -98,30 +98,30 @@ export function AdminInscricaoPage() {
     try {
       await inscricaoService.confirmarPresenca(selectedCursoId, alunoId)
       if (import.meta.env.DEV) {
-        toast.success('Presenca confirmada com sucesso.')
+        toast.success('Presença confirmada com sucesso.')
       }
       await loadInscricoesByCurso(selectedCursoId)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel confirmar a presenca.')
+        toast.error('Não foi possível confirmar a presença.')
       }
     }
   }
 
   async function handleRemoverInscricao(alunoId: number, alunoNome: string) {
     if (!selectedCursoId) return
-    const confirmed = window.confirm(`Deseja remover a inscricao de "${alunoNome}"?`)
+    const confirmed = window.confirm(`Deseja remover a inscrição de "${alunoNome}"?`)
     if (!confirmed) return
 
     try {
       await inscricaoService.removerInscricao(selectedCursoId, alunoId)
       if (import.meta.env.DEV) {
-        toast.success('Inscricao removida com sucesso.')
+        toast.success('Inscrição removida com sucesso.')
       }
       await loadInscricoesByCurso(selectedCursoId)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel remover a inscricao.')
+        toast.error('Não foi possível remover a inscrição.')
       }
     }
   }
@@ -132,10 +132,10 @@ export function AdminInscricaoPage() {
         <div className="flex flex-col gap-4 px-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-3xl">
-              Inscricoes
+              Inscrições
             </h2>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Gerencie a matricula de alunos nos cursos.
+              Gerencie a matrícula de alunos nos cursos.
             </p>
           </div>
 
@@ -160,7 +160,7 @@ export function AdminInscricaoPage() {
               onClick={() => setIsFormOpen(true)}
               className="rounded-2xl px-6 py-3 text-sm font-bold shadow-xl shadow-indigo-200/40 dark:shadow-indigo-950/40"
             >
-              Nova inscricao
+              Nova inscrição
             </Button>
           </div>
         </div>

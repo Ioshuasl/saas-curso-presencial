@@ -74,13 +74,13 @@ const quickLinks = [
   {
     to: '/cursos',
     label: 'Cursos',
-    description: 'Cadastro e sessoes',
+    description: 'Cadastro e sessões',
     icon: BookOpen,
   },
   {
     to: '/alunos',
     label: 'Alunos',
-    description: 'Matriculas e perfis',
+    description: 'Matrículas e perfis',
     icon: GraduationCap,
   },
   {
@@ -156,7 +156,7 @@ export function AdminDashboardPage() {
         hasInitialLoadRef.current = true
       } catch {
         if (!cancelled && import.meta.env.DEV) {
-          toast.error('Nao foi possivel carregar o dashboard.')
+          toast.error('Não foi possível carregar o dashboard.')
         }
         if (!cancelled) {
           setReceita(0)
@@ -259,7 +259,7 @@ export function AdminDashboardPage() {
           iconTint="bg-indigo-50 dark:bg-indigo-950/40"
         />
         <StatCard
-          label="Inscricoes"
+          label="Inscrições"
           value={String(inscricoes)}
           badge="Total no tenant"
           trend="neutral"
@@ -278,7 +278,7 @@ export function AdminDashboardPage() {
               <div className="min-w-0 flex-1">
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">Agenda</h3>
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Sessoes dos cursos em {selectedDateLabel}
+                  Sessões dos cursos em {selectedDateLabel}
                 </p>
               </div>
 
@@ -288,7 +288,7 @@ export function AdminDashboardPage() {
                 className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-900 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
               >
                 <CalendarDays size={14} />
-                Ver calendario
+                Ver calendário
               </button>
             </div>
 
@@ -303,10 +303,10 @@ export function AdminDashboardPage() {
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-10 text-center dark:border-slate-700 dark:bg-slate-950/40">
                 <ClipboardList className="mx-auto mb-3 text-slate-300 dark:text-slate-600" size={36} />
                 <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-                  Nenhuma sessao agendada para esta data.
+                  Nenhuma sessão agendada para esta data.
                 </p>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
-                  Quando houver sessoes, elas aparecem aqui.
+                  Quando houver sessões, elas aparecem aqui.
                 </p>
               </div>
             ) : (
@@ -340,7 +340,7 @@ export function AdminDashboardPage() {
 
         <div className="space-y-3">
           <h3 className="px-1 text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-            Acesso rapido
+            Acesso rápido
           </h3>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-1">
             {quickLinks.map((item) => {
@@ -377,7 +377,7 @@ export function AdminDashboardPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
             type="button"
-            aria-label="Fechar calendario"
+            aria-label="Fechar calendário"
             className="absolute inset-0 bg-slate-950/45 backdrop-blur-[1px]"
             onClick={() => setIsCalendarOpen(false)}
           />

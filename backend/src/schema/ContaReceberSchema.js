@@ -1,8 +1,4 @@
 import { z } from 'zod';
-import {
-  tenantContextFields,
-  refineHasTenantContext,
-} from './TenantContextSchema.js';
 
 const parcelaSchema = z.object({
   numero_parcela: z.coerce.number().int('Número da parcela deve ser inteiro').positive('Número da parcela inválido'),
@@ -27,17 +23,13 @@ const contaReceberBase = {
   parcelas: z.array(parcelaSchema).min(1, 'Informe ao menos uma parcela'),
 };
 
-export const createContaReceberSchema = z
-  .object({
-    ...contaReceberBase,
-    ...tenantContextFields,
-  })
-  .superRefine(refineHasTenantContext);
+export const createContaReceberSchema = z.object({
+  ...contaReceberBase,
+});
 
 export const updateContaReceberSchema = z
   .object({
     ...contaReceberBase,
-    ...tenantContextFields,
   })
   .partial();
 

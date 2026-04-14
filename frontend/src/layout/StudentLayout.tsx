@@ -12,7 +12,7 @@ type StudentLayoutProps = PropsWithChildren<{
 }>
 
 const studentMenuItems: SidebarMenuItem[] = [
-  { id: 'catalog', label: 'Catalogo', path: '/catalogo', icon: 'store' },
+  { id: 'catalog', label: 'Catálogo', path: '/catalogo', icon: 'store' },
   { id: 'my-courses', label: 'Meus Cursos', path: '/meus-cursos', icon: 'graduation-cap' },
   { id: 'payments', label: 'Pagamentos', path: '/pagamentos', icon: 'credit-card' },
   { id: 'profile', label: 'Perfil', path: '/perfil', icon: 'user-circle' },

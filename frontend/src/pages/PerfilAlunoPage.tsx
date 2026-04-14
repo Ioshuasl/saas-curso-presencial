@@ -48,7 +48,7 @@ export function PerfilAlunoPage() {
       })
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar o seu perfil.')
+        toast.error('Não foi possível carregar o seu perfil.')
       }
     } finally {
       setIsLoading(false)
@@ -78,7 +78,7 @@ export function PerfilAlunoPage() {
       await loadProfile()
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel atualizar o perfil.')
+        toast.error('Não foi possível atualizar o perfil.')
       }
     } finally {
       setIsSubmitting(false)
@@ -96,7 +96,7 @@ export function PerfilAlunoPage() {
           Meu Perfil
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Atualize seus dados pessoais para personalizar sua experiencia.
+          Atualize seus dados pessoais para personalizar sua experiência.
         </p>
       </div>
 
@@ -149,7 +149,7 @@ export function PerfilAlunoPage() {
             disabled={isLoading || isSubmitting}
           />
           <Input
-            label="Profissao"
+            label="Profissão"
             value={form.profissao}
             onChange={(event) => {
               setForm((prev) => ({ ...prev, profissao: event.target.value }))
@@ -169,7 +169,7 @@ export function PerfilAlunoPage() {
         />
 
         <Button type="submit" isLoading={isSubmitting} disabled={isLoading}>
-          Salvar alteracoes
+          Salvar alterações
         </Button>
       </form>
     </section>

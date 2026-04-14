@@ -76,7 +76,7 @@ export function AlunoInsightsModal({
                 </span>
               </div>
               <p className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-                Historico de inscricoes, sessoes, questionario e feedback final.
+                Histórico de inscrições, sessões, questionário e feedback final.
               </p>
             </div>
           </div>
@@ -93,12 +93,12 @@ export function AlunoInsightsModal({
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto scrollbar-hide bg-slate-50/40 p-4 dark:bg-slate-950/40 md:p-6">
           {isLoading ? (
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-8 text-center text-sm font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-              Carregando inscricoes...
+              Carregando inscrições...
             </div>
           ) : inscricoes.length ? (
             inscricoes.map((inscricao) => {
               const isExpanded = expandedId === inscricao.id
-              const cursoNome = inscricao.curso?.nome ?? 'Curso nao identificado'
+              const cursoNome = inscricao.curso?.nome ?? 'Curso não identificado'
               const sessoes = inscricao.curso?.sessoes ?? []
               const avaliacao = inscricao.feedback_final?.avaliacao
 
@@ -127,7 +127,7 @@ export function AlunoInsightsModal({
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-3">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                          {sessoes.length} {sessoes.length === 1 ? 'Sessao' : 'Sessoes'}
+                          {sessoes.length} {sessoes.length === 1 ? 'Sessão' : 'Sessões'}
                         </span>
                         {typeof avaliacao === 'number' ? (
                           <span className="inline-flex items-center gap-1 text-amber-500">
@@ -169,10 +169,10 @@ export function AlunoInsightsModal({
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-14 text-center dark:border-slate-700 dark:bg-slate-900">
               <BookOpen size={40} className="mb-3 text-slate-300 dark:text-slate-600" />
               <p className="text-base font-black text-slate-500 dark:text-slate-300">
-                Historico vazio
+                Histórico vazio
               </p>
               <p className="mt-1 text-xs font-medium text-slate-400 dark:text-slate-500">
-                Nenhuma inscricao registrada para este aluno.
+                Nenhuma inscrição registrada para este aluno.
               </p>
             </div>
           )}
@@ -213,12 +213,12 @@ function ExpandedInscricao({ inscricao }: { inscricao: AlunoDetalheInscricao }) 
         <div className="space-y-3">
           <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
             <Target size={12} />
-            Questionario inicial
+            Questionário inicial
           </p>
           <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
             <p className="text-[10px] font-black uppercase tracking-wider text-rose-500">Maior dor</p>
             <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
-              {inscricao.questionario_inicial?.maior_dor_inicio ?? 'Nao informado.'}
+              {inscricao.questionario_inicial?.maior_dor_inicio ?? 'Não informado.'}
             </p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
@@ -226,7 +226,7 @@ function ExpandedInscricao({ inscricao }: { inscricao: AlunoDetalheInscricao }) 
               Principal expectativa
             </p>
             <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
-              {inscricao.questionario_inicial?.principal_expectativa ?? 'Nao informado.'}
+              {inscricao.questionario_inicial?.principal_expectativa ?? 'Não informado.'}
             </p>
           </div>
         </div>
@@ -251,10 +251,10 @@ function ExpandedInscricao({ inscricao }: { inscricao: AlunoDetalheInscricao }) 
                   Resultado esperado
                 </p>
                 <p className="mt-1 text-sm text-amber-900 dark:text-amber-100">
-                  {inscricao.feedback_final.resultado_esperado ?? 'Nao informado.'}
+                  {inscricao.feedback_final.resultado_esperado ?? 'Não informado.'}
                 </p>
                 <p className="mt-3 text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300">
-                  Avaliacao: {inscricao.feedback_final.avaliacao}/5
+                  Avaliação: {inscricao.feedback_final.avaliacao}/5
                 </p>
               </div>
             </>

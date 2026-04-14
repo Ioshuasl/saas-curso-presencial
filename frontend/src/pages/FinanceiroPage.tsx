@@ -84,7 +84,7 @@ export function FinanceiroPage() {
       setContasReceber(receberRes.data.data)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar os dados do financeiro.')
+        toast.error('Não foi possível carregar os dados do financeiro.')
       }
     } finally {
       setIsLoading(false)
@@ -230,7 +230,7 @@ export function FinanceiroPage() {
         setIsContaPagarFormOpen(true)
       }
     } catch {
-      if (import.meta.env.DEV) toast.error('Nao foi possivel carregar o registro para edicao.')
+      if (import.meta.env.DEV) toast.error('Não foi possível carregar o registro para edição.')
     }
   }
 
@@ -250,10 +250,10 @@ export function FinanceiroPage() {
       } else {
         await contaPagarService.deletarContaPagar(realId)
       }
-      if (import.meta.env.DEV) toast.success('Registro excluido com sucesso.')
+      if (import.meta.env.DEV) toast.success('Registro excluído com sucesso.')
       await loadFinanceiro()
     } catch {
-      if (import.meta.env.DEV) toast.error('Nao foi possivel excluir o registro.')
+      if (import.meta.env.DEV) toast.error('Não foi possível excluir o registro.')
     }
   }
 
@@ -266,7 +266,7 @@ export function FinanceiroPage() {
               Base Financeira
             </h2>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Lista unificada de receitas e despesas, com filtros e edicao rapida.
+              Lista unificada de receitas e despesas, com filtros e edição rápida.
             </p>
           </div>
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { CheckCircle2, RefreshCcw } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { CursoDetalhesModal } from '../components/cursos/CursoDetalhesModal'
 import { Button } from '../components/ui/Button'
 import { cursoService, inscricaoService } from '../services'
 import type { Curso } from '../types'
@@ -11,6 +12,7 @@ export function MeusCursosPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [confirmingCourseId, setConfirmingCourseId] = useState<number | null>(null)
   const [presenceByCourseId, setPresenceByCourseId] = useState<Record<number, boolean>>({})
+  const [cursoEmDetalhes, setCursoEmDetalhes] = useState<Curso | null>(null)
 
   async function loadCursos() {
     setIsLoading(true)
@@ -30,7 +32,7 @@ export function MeusCursosPage() {
       setPresenceByCourseId(Object.fromEntries(presenceChecks))
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar seus cursos.')
+        toast.error('Não foi possível carregar seus cursos.')
       }
     } finally {
       setIsLoading(false)
@@ -43,11 +45,11 @@ export function MeusCursosPage() {
       await inscricaoService.confirmarPresenca(cursoId)
       setPresenceByCourseId((prev) => ({ ...prev, [cursoId]: true }))
       if (import.meta.env.DEV) {
-        toast.success('Presenca confirmada com sucesso.')
+        toast.success('Presença confirmada com sucesso.')
       }
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel confirmar a presenca agora.')
+        toast.error('Não foi possível confirmar a presença agora.')
       }
     } finally {
       setConfirmingCourseId(null)
@@ -66,7 +68,7 @@ export function MeusCursosPage() {
             Meus Cursos
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Cursos com inscricao aprovada para seu perfil.
+            Cursos com inscrição aprovada para seu perfil.
           </p>
         </div>
         <Button
@@ -88,6 +90,15 @@ export function MeusCursosPage() {
           return (
             <article
               key={curso.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => setCursoEmDetalhes(curso)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  setCursoEmDetalhes(curso)
+                }
+              }}
               className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900"
             >
               <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{curso.nome}</h3>
@@ -103,16 +114,22 @@ export function MeusCursosPage() {
                 isLoading={confirmingCourseId === curso.id}
                 disabled={isPresenceConfirmed}
                 startIcon={<CheckCircle2 size={16} />}
-                onClick={() => {
+                onClick={(event) => {
+                  event.stopPropagation()
                   void handleConfirmarPresenca(curso.id)
                 }}
               >
-                {isPresenceConfirmed ? 'Presenca ja confirmada' : 'Confirmar Presenca'}
+                {isPresenceConfirmed ? 'Presença já confirmada' : 'Confirmar Presença'}
               </Button>
             </article>
           )
         })}
       </div>
+      <CursoDetalhesModal
+        curso={cursoEmDetalhes}
+        isOpen={Boolean(cursoEmDetalhes)}
+        onClose={() => setCursoEmDetalhes(null)}
+      />
     </section>
   )
 }

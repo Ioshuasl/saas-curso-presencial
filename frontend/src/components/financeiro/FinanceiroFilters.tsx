@@ -74,7 +74,7 @@ export function FinanceiroFilters({
             label="Busca"
             value={value.search}
             onChange={(event) => onChange({ ...value, search: event.target.value })}
-            placeholder="Descricao ou categoria"
+            placeholder="Descrição ou categoria"
             startIcon={<Search size={16} />}
           />
 

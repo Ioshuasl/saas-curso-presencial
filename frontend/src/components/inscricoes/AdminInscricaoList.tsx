@@ -25,7 +25,7 @@ export function AdminInscricaoList({
   if (isLoading) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white px-5 py-8 text-center text-sm font-semibold text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-        Carregando inscricoes...
+        Carregando inscrições...
       </div>
     )
   }
@@ -39,7 +39,7 @@ export function AdminInscricaoList({
           Nenhum aluno inscrito neste curso
         </p>
         <p className="mt-1 text-xs font-medium text-slate-400 dark:text-slate-500">
-          Use o botao "Nova inscricao" para adicionar alunos.
+          Use o botão "Nova inscrição" para adicionar alunos.
         </p>
       </div>
     )
@@ -69,7 +69,7 @@ export function AdminInscricaoList({
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                   <span>ID: {aluno.id}</span>
                   <span>CPF: {aluno.cpf || '-'}</span>
-                  <span>Inscricao: {dataInscricao}</span>
+                  <span>Inscrição: {dataInscricao}</span>
                 </div>
               </div>
 
@@ -82,7 +82,7 @@ export function AdminInscricaoList({
                   }`}
                 >
                   <UserRound size={12} />
-                  {presencaConfirmada ? 'Presenca confirmada' : 'Presenca pendente'}
+                  {presencaConfirmada ? 'Presença confirmada' : 'Presença pendente'}
                 </span>
 
                 <div className="flex gap-2">

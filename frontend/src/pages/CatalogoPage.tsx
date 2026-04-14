@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { asRecord } from '../components/tenantConfig/tenantConfigUtils'
 import { AvaliarCursoModal } from '../components/cursos/AvaliarCursoModal'
+import { CursoDetalhesModal } from '../components/cursos/CursoDetalhesModal'
 import { Button } from '../components/ui/Button'
 import { authService, configService, cursoService } from '../services'
 import type { Curso } from '../types'
@@ -21,6 +22,7 @@ export function CatalogoPage() {
   const [cursos, setCursos] = useState<Curso[]>([])
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<number>>(new Set())
   const [cursoEmAvaliacao, setCursoEmAvaliacao] = useState<Curso | null>(null)
+  const [cursoEmDetalhes, setCursoEmDetalhes] = useState<Curso | null>(null)
   const [whatsappDigits, setWhatsappDigits] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -51,7 +53,7 @@ export function CatalogoPage() {
       }
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar o catalogo de cursos.')
+        toast.error('Não foi possível carregar o catálogo de cursos.')
       }
     } finally {
       setIsLoading(false)
@@ -61,12 +63,12 @@ export function CatalogoPage() {
   function handleWhatsAppContato(curso: Curso) {
     if (!whatsappDigits) {
       toast.error(
-        'Telefone WhatsApp do tenant nao configurado. Um administrador pode informar em Configuracoes > Dados gerais.',
+        'Telefone WhatsApp do tenant não configurado. Um administrador pode informar em Configurações > Dados gerais.',
       )
       return
     }
     const text = encodeURIComponent(
-      `Ola! Tenho interesse no curso "${curso.nome}" e gostaria de mais informacoes para dar continuidade.`,
+      `Olá! Tenho interesse no curso "${curso.nome}" e gostaria de mais informações para dar continuidade.`,
     )
     window.open(`https://wa.me/${whatsappDigits}?text=${text}`, '_blank', 'noopener,noreferrer')
   }
@@ -89,14 +91,14 @@ export function CatalogoPage() {
             <div className="max-w-2xl">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300">
                 <Sparkles size={14} />
-                Area do aluno
+                Área do aluno
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-3xl">
-                Catalogo de Cursos
+                Catálogo de Cursos
               </h2>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                Explore trilhas de formacao com uma experiencia mais clara e objetiva. Use o WhatsApp para
-                demonstrar interesse em novos cursos, ou avalie os cursos em que voce ja esta inscrito.
+                Explore trilhas de formação com uma experiência mais clara e objetiva. Use o WhatsApp para
+                demonstrar interesse em novos cursos, ou avalie os cursos em que você já está inscrito.
               </p>
             </div>
 
@@ -133,6 +135,15 @@ export function CatalogoPage() {
             return (
               <article
                 key={curso.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setCursoEmDetalhes(curso)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setCursoEmDetalhes(curso)
+                  }
+                }}
                 className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
               >
                 {curso.url_imagem ? (
@@ -157,12 +168,12 @@ export function CatalogoPage() {
                           : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
                       }`}
                     >
-                      {isEnrolled ? 'Inscrito' : 'Disponivel'}
+                      {isEnrolled ? 'Inscrito' : 'Disponível'}
                     </span>
                   </div>
 
                   <p className="mt-3 line-clamp-3 text-sm text-slate-500 dark:text-slate-400">
-                    {curso.descricao ?? 'Descricao sera disponibilizada em breve.'}
+                    {curso.descricao ?? 'Descrição será disponibilizada em breve.'}
                   </p>
 
                   <div className="mt-5 grid gap-2 text-sm text-slate-600 dark:text-slate-300">
@@ -186,8 +197,8 @@ export function CatalogoPage() {
 
                   <p className="mt-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                     {isEnrolled
-                      ? 'Voce ja participa deste curso. Clique para registrar seu questionario e feedback.'
-                      : 'A inscricao e realizada pelo atendimento apos o contato e alinhamento das condicoes.'}
+                      ? 'Você já participa deste curso. Clique para registrar seu questionário e feedback.'
+                      : 'A inscrição é realizada pelo atendimento após o contato e alinhamento das condições.'}
                   </p>
 
                   <div className="mt-4">
@@ -195,7 +206,8 @@ export function CatalogoPage() {
                       type="button"
                       fullWidth
                       startIcon={<ExternalLink size={15} />}
-                      onClick={() => {
+                      onClick={(event) => {
+                        event.stopPropagation()
                         if (isEnrolled) {
                           setCursoEmAvaliacao(curso)
                           return
@@ -214,7 +226,7 @@ export function CatalogoPage() {
 
         {!isLoading && cursos.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 px-6 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400">
-            Nenhum curso disponivel no momento.
+            Nenhum curso disponível no momento.
           </div>
         ) : null}
       </section>
@@ -223,6 +235,11 @@ export function CatalogoPage() {
         curso={cursoEmAvaliacao}
         isOpen={Boolean(cursoEmAvaliacao)}
         onClose={() => setCursoEmAvaliacao(null)}
+      />
+      <CursoDetalhesModal
+        curso={cursoEmDetalhes}
+        isOpen={Boolean(cursoEmDetalhes)}
+        onClose={() => setCursoEmDetalhes(null)}
       />
     </>
   )

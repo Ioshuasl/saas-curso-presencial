@@ -50,7 +50,7 @@ export function AdminCursoPage() {
       setPagination(response.data.paginacao)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar a lista de cursos.')
+        toast.error('Não foi possível carregar a lista de cursos.')
       }
     } finally {
       setIsLoading(false)
@@ -95,12 +95,12 @@ export function AdminCursoPage() {
     try {
       await cursoService.deletarCurso(curso.id)
       if (import.meta.env.DEV) {
-        toast.success('Curso excluido com sucesso.')
+        toast.success('Curso excluído com sucesso.')
       }
       await loadCursos(filters, currentPage)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel excluir o curso.')
+        toast.error('Não foi possível excluir o curso.')
       }
     }
   }
@@ -114,7 +114,7 @@ export function AdminCursoPage() {
               Base de Cursos
             </h2>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Gestao de cursos cadastrados, com filtros e edicao rapida.
+              Gestão de cursos cadastrados, com filtros e edição rápida.
             </p>
           </div>
 

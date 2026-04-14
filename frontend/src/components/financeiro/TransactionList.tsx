@@ -94,7 +94,7 @@ export function TransactionList({
           <Clock size={32} />
         </div>
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500">
-          Sem transacoes para este periodo
+          Sem transações para este período
         </p>
       </div>
     )
@@ -234,7 +234,7 @@ export function TransactionList({
                   Tipo
                 </th>
                 <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                  Descricao
+                  Descrição
                 </th>
                 <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                   Datas
@@ -246,7 +246,7 @@ export function TransactionList({
                   Valor
                 </th>
                 <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                  Acoes
+                  Ações
                 </th>
               </tr>
             </thead>
@@ -282,7 +282,7 @@ export function TransactionList({
                         )}
                       >
                         {isIncome ? <ArrowUpRight size={12} /> : <ArrowDownLeft size={12} />}
-                        {isIncome ? 'Entrada' : 'Saida'}
+                        {isIncome ? 'Entrada' : 'Saída'}
                       </div>
                     </td>
                     <td className="px-4 py-3 align-top">
@@ -403,7 +403,7 @@ export function TransactionList({
           <div className="flex items-center gap-1">
             <div className="h-2 w-2 rounded-full bg-rose-500" />
             <span className="text-[9px] font-bold uppercase text-slate-500 dark:text-slate-300">
-              Saida
+              Saída
             </span>
           </div>
         </div>

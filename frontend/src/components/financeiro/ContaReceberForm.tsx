@@ -44,6 +44,16 @@ type FormState = {
   parcelas: ParcelaState[]
 }
 
+type BatchValueMode = 'EQUAL_SPLIT' | 'FIXED_VALUE'
+
+type ParcelasBatchState = {
+  quantidade: string
+  primeiroVencimento: Date | null
+  intervaloDias: string
+  valueMode: BatchValueMode
+  valorFixo: number | null
+}
+
 function parseDateValue(value?: string | null): Date | null {
   if (!value) return null
   const normalized = value.includes('T') ? value : `${value}T00:00:00`
@@ -68,6 +78,28 @@ function getTodayYmd(): string {
   return `${year}-${month}-${day}`
 }
 
+function addDays(baseDate: Date, days: number): Date {
+  const next = new Date(baseDate)
+  next.setDate(next.getDate() + days)
+  return next
+}
+
+function splitTotalIntoInstallments(total: number, quantity: number): number[] {
+  const totalInCents = Math.round(total * 100)
+  const baseInCents = Math.floor(totalInCents / quantity)
+  let remainder = totalInCents - baseInCents * quantity
+
+  const valuesInCents = Array.from({ length: quantity }, () => {
+    if (remainder > 0) {
+      remainder -= 1
+      return baseInCents + 1
+    }
+    return baseInCents
+  })
+
+  return valuesInCents.map((value) => value / 100)
+}
+
 const initialState: FormState = {
   alunoId: '',
   cursoId: '',
@@ -78,6 +110,14 @@ const initialState: FormState = {
   parcelas: [
     { numeroParcela: '1', valor: null, dataVencimento: null, pago: false, dataPagamento: null },
   ],
+}
+
+const initialBatchState: ParcelasBatchState = {
+  quantidade: '1',
+  primeiroVencimento: null,
+  intervaloDias: '30',
+  valueMode: 'EQUAL_SPLIT',
+  valorFixo: null,
 }
 
 export function ContaReceberForm({
@@ -93,12 +133,13 @@ export function ContaReceberForm({
   const [alunoOptions, setAlunoOptions] = useState<Array<{ label: string; value: number; description?: string }>>([])
   const [cursoOptions, setCursoOptions] = useState<Array<{ label: string; value: number }>>([])
   const [isLoadingReferences, setIsLoadingReferences] = useState(false)
+  const [parcelasBatch, setParcelasBatch] = useState<ParcelasBatchState>(initialBatchState)
 
   const formaPagamentoOptions = useMemo(
     () => [
       { label: 'PIX', value: 'PIX' },
-      { label: 'Cartao de credito', value: 'CARTAO_CREDITO' },
-      { label: 'Cartao de debito', value: 'CARTAO_DEBITO' },
+      { label: 'Cartão de crédito', value: 'CARTAO_CREDITO' },
+      { label: 'Cartão de débito', value: 'CARTAO_DEBITO' },
     ],
     [],
   )
@@ -106,8 +147,22 @@ export function ContaReceberForm({
   useEffect(() => {
     if (!selectedContaReceber) {
       setForm(initialState)
+      setParcelasBatch(initialBatchState)
       return
     }
+
+    const mappedParcelas =
+      selectedContaReceber.parcelas?.length
+        ? selectedContaReceber.parcelas.map((p, idx) => ({
+            id: p.id,
+            numeroParcela:
+              p.numero_parcela != null ? String(p.numero_parcela) : p.numero != null ? String(p.numero) : String(idx + 1),
+            valor: p.valor != null ? Number(p.valor) : null,
+            dataVencimento: parseDateValue(p.data_vencimento),
+            pago: Boolean(p.pago),
+            dataPagamento: p.data_pagamento ?? null,
+          }))
+        : [{ numeroParcela: '1', valor: null, dataVencimento: null, pago: false, dataPagamento: null }]
 
     setForm({
       alunoId: selectedContaReceber.aluno_id != null ? String(selectedContaReceber.aluno_id) : '',
@@ -119,19 +174,15 @@ export function ContaReceberForm({
       descricao: selectedContaReceber.descricao ?? '',
       observacao: selectedContaReceber.observacao ?? '',
       valorTotal: Number(selectedContaReceber.valor_total ?? 0),
-      parcelas:
-        selectedContaReceber.parcelas?.length
-          ? selectedContaReceber.parcelas.map((p, idx) => ({
-              id: p.id,
-              numeroParcela:
-                p.numero_parcela != null ? String(p.numero_parcela) : p.numero != null ? String(p.numero) : String(idx + 1),
-              valor: p.valor != null ? Number(p.valor) : null,
-              dataVencimento: parseDateValue(p.data_vencimento),
-              pago: Boolean(p.pago),
-              dataPagamento: p.data_pagamento ?? null,
-            }))
-          : [{ numeroParcela: '1', valor: null, dataVencimento: null, pago: false, dataPagamento: null }],
+      parcelas: mappedParcelas,
     })
+
+    setParcelasBatch((prev) => ({
+      ...prev,
+      quantidade: String(mappedParcelas.length || 1),
+      primeiroVencimento: mappedParcelas[0]?.dataVencimento ?? null,
+      valorFixo: mappedParcelas[0]?.valor ?? null,
+    }))
   }, [selectedContaReceber])
 
   useEffect(() => {
@@ -191,6 +242,17 @@ export function ContaReceberForm({
 
   const isEditing = Boolean(selectedContaReceber)
 
+  const batchTotalPreview = useMemo(() => {
+    const quantidade = Number(parcelasBatch.quantidade)
+    if (!Number.isFinite(quantidade) || quantidade <= 0) return 0
+
+    if (parcelasBatch.valueMode === 'FIXED_VALUE') {
+      return (parcelasBatch.valorFixo ?? 0) * quantidade
+    }
+
+    return form.valorTotal ?? 0
+  }, [form.valorTotal, parcelasBatch.quantidade, parcelasBatch.valorFixo, parcelasBatch.valueMode])
+
   function updateParcela(index: number, patch: Partial<ParcelaState>) {
     setForm((prev) => ({
       ...prev,
@@ -211,6 +273,58 @@ export function ContaReceberForm({
           dataPagamento: null,
         },
       ],
+    }))
+  }
+
+  function generateParcelasInBatch() {
+    const quantidade = Number(parcelasBatch.quantidade)
+    const intervaloDias = Number(parcelasBatch.intervaloDias)
+
+    if (!Number.isFinite(quantidade) || quantidade <= 0) {
+      window.alert('Informe uma quantidade de parcelas válida.')
+      return
+    }
+
+    if (!parcelasBatch.primeiroVencimento) {
+      window.alert('Informe a data do primeiro vencimento.')
+      return
+    }
+
+    if (!Number.isFinite(intervaloDias) || intervaloDias <= 0) {
+      window.alert('Informe um intervalo em dias válido.')
+      return
+    }
+
+    let values: number[] = []
+    if (parcelasBatch.valueMode === 'FIXED_VALUE') {
+      if (parcelasBatch.valorFixo == null || !Number.isFinite(parcelasBatch.valorFixo) || parcelasBatch.valorFixo <= 0) {
+        window.alert('Informe um valor fixo válido para as parcelas.')
+        return
+      }
+      values = Array.from({ length: quantidade }, () => parcelasBatch.valorFixo as number)
+    } else {
+      if (form.valorTotal == null || !Number.isFinite(form.valorTotal) || form.valorTotal <= 0) {
+        window.alert('Para dividir igualmente, informe o valor total da receita.')
+        return
+      }
+      values = splitTotalIntoInstallments(form.valorTotal, quantidade)
+    }
+
+    const generatedParcelas: ParcelaState[] = Array.from({ length: quantidade }, (_, index) => ({
+      numeroParcela: String(index + 1),
+      valor: values[index],
+      dataVencimento: addDays(parcelasBatch.primeiroVencimento as Date, intervaloDias * index),
+      pago: false,
+      dataPagamento: null,
+    }))
+
+    setForm((prev) => ({
+      ...prev,
+      parcelas: generatedParcelas,
+      valorTotal:
+        parcelasBatch.valueMode === 'FIXED_VALUE' && (!prev.valorTotal || prev.valorTotal <= 0)
+          ? Number((values.reduce((acc, value) => acc + value, 0)).toFixed(2))
+          : prev.valorTotal,
     }))
   }
 
@@ -235,11 +349,11 @@ export function ContaReceberForm({
     const cursoId = Number(form.cursoId)
 
     if (!Number.isFinite(alunoId) || alunoId <= 0) {
-      window.alert('Informe um `aluno_id` valido.')
+      window.alert('Informe um `aluno_id` válido.')
       return
     }
     if (!Number.isFinite(cursoId) || cursoId <= 0) {
-      window.alert('Informe um `curso_id` valido.')
+      window.alert('Informe um `curso_id` válido.')
       return
     }
     if (form.valorTotal === null) {
@@ -261,7 +375,7 @@ export function ContaReceberForm({
         return
       }
       if (!Number.isFinite(numeroParcela) || numeroParcela <= 0) {
-        window.alert(`Numero da parcela ${i + 1} deve ser maior que zero.`)
+        window.alert(`Número da parcela ${i + 1} deve ser maior que zero.`)
         return
       }
       if (p.valor === null) {
@@ -346,7 +460,7 @@ export function ContaReceberForm({
             <div className="space-y-6">
               <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
                 <span className="h-px w-5 bg-indigo-600 dark:bg-indigo-300" />
-                Dados obrigatorios
+                Dados obrigatórios
               </h4>
 
               <Input
@@ -405,10 +519,10 @@ export function ContaReceberForm({
               />
 
               <Textarea
-                label="Observacoes (opcional)"
+                label="Observações (opcional)"
                 value={form.observacao}
                 onChange={(event) => setForm((prev) => ({ ...prev, observacao: event.target.value }))}
-                placeholder="Anotacoes sobre a receita..."
+                placeholder="Anotações sobre a receita..."
                 rows={5}
                 className="[&_textarea]:rounded-2xl [&_textarea]:border-slate-200 [&_textarea]:bg-slate-50 [&_textarea]:px-4 [&_textarea]:py-3 [&_textarea]:font-medium dark:[&_textarea]:border-slate-700 dark:[&_textarea]:bg-slate-800/70"
               />
@@ -419,6 +533,81 @@ export function ContaReceberForm({
                 <span className="h-px w-5 bg-indigo-600 dark:bg-indigo-300" />
                 Parcelas
               </h4>
+
+              <div className="space-y-4 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/20">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-bold uppercase tracking-widest text-indigo-700 dark:text-indigo-300">
+                    Gerador em lote
+                  </p>
+                  <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-indigo-700 shadow-sm dark:bg-slate-900 dark:text-indigo-300">
+                    padrão CRM
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Input
+                    label="Quantidade de parcelas"
+                    type="number"
+                    min={1}
+                    value={parcelasBatch.quantidade}
+                    onChange={(event) =>
+                      setParcelasBatch((prev) => ({ ...prev, quantidade: event.target.value }))
+                    }
+                  />
+                  <DatePicker
+                    label="Primeiro vencimento"
+                    value={parcelasBatch.primeiroVencimento}
+                    onChange={(date) =>
+                      setParcelasBatch((prev) => ({ ...prev, primeiroVencimento: date }))
+                    }
+                    size="md"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Input
+                    label="Intervalo fixo (dias)"
+                    type="number"
+                    min={1}
+                    value={parcelasBatch.intervaloDias}
+                    onChange={(event) =>
+                      setParcelasBatch((prev) => ({ ...prev, intervaloDias: event.target.value }))
+                    }
+                  />
+                  <Select
+                    label="Regra de valor"
+                    value={parcelasBatch.valueMode}
+                    onChange={(value) =>
+                      setParcelasBatch((prev) => ({ ...prev, valueMode: String(value) as BatchValueMode }))
+                    }
+                    options={[
+                      { label: 'Dividir valor total igualmente', value: 'EQUAL_SPLIT' },
+                      { label: 'Valor fixo em todas as parcelas', value: 'FIXED_VALUE' },
+                    ]}
+                  />
+                </div>
+
+                {parcelasBatch.valueMode === 'FIXED_VALUE' ? (
+                  <CurrencyInput
+                    label="Valor fixo por parcela"
+                    value={parcelasBatch.valorFixo}
+                    onChange={(next) => setParcelasBatch((prev) => ({ ...prev, valorFixo: next }))}
+                  />
+                ) : null}
+
+                <div className="rounded-xl border border-indigo-200/70 bg-white px-3 py-2 text-xs font-medium text-indigo-700 dark:border-indigo-800 dark:bg-slate-900/50 dark:text-indigo-300">
+                  Total previsto do lote: {batchTotalPreview.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={generateParcelasInBatch}
+                  className="w-full rounded-2xl border-indigo-200 bg-white font-semibold text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 dark:hover:bg-indigo-950/30"
+                >
+                  Gerar parcelas automaticamente
+                </Button>
+              </div>
 
               <div className="space-y-3">
                 {form.parcelas.map((parcela, index) => (
@@ -466,7 +655,7 @@ export function ContaReceberForm({
                             ? `Pagamento registrado em ${
                                 parcela.dataPagamento
                                   ? new Date(parcela.dataPagamento).toLocaleDateString('pt-BR')
-                                  : 'data nao informada'
+                                  : 'data não informada'
                               }`
                             : 'Marque quando a parcela for paga.'
                         }
@@ -525,7 +714,7 @@ export function ContaReceberForm({
             startIcon={<Save size={18} />}
             className="w-full rounded-2xl px-7 py-3 text-sm font-bold uppercase tracking-wider shadow-xl shadow-indigo-200/40 sm:w-auto dark:shadow-indigo-950/40"
           >
-            {isEditing ? 'Salvar alteracoes' : 'Salvar receita'}
+            {isEditing ? 'Salvar alterações' : 'Salvar receita'}
           </Button>
         </div>
       </form>

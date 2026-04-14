@@ -15,7 +15,7 @@ function resolveStatusLabel(curso: Curso) {
   if (status === 'APROVADO') return 'Aprovado'
   if (status === 'REPROVADO') return 'Reprovado'
   if (status === 'PENDENTE') return 'Pendente'
-  return 'Em analise'
+  return 'Em análise'
 }
 
 export function PagamentosPage() {
@@ -29,7 +29,7 @@ export function PagamentosPage() {
       setInscricoes(response.data)
     } catch {
       if (import.meta.env.DEV) {
-        toast.error('Nao foi possivel carregar o status dos pagamentos.')
+        toast.error('Não foi possível carregar o status dos pagamentos.')
       }
     } finally {
       setIsLoading(false)
@@ -48,7 +48,7 @@ export function PagamentosPage() {
             Pagamentos
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Acompanhe o status de validacao dos seus comprovantes.
+            Acompanhe o status de validação dos seus comprovantes.
           </p>
         </div>
         <Button
