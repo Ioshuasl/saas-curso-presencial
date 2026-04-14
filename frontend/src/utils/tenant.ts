@@ -9,6 +9,23 @@ function isLocalHost(hostname: string) {
   return hostname === 'localhost' || hostname === '127.0.0.1'
 }
 
+function resolveTenantBySubdomain(hostname: string): string | null {
+  const baseDomain = String(import.meta.env.VITE_TENANT_SUBDOMAIN_ROOT_DOMAIN ?? '').trim().toLowerCase()
+  if (!baseDomain) return null
+
+  const host = hostname.trim().toLowerCase()
+  if (!host || host === baseDomain) return null
+  if (!host.endsWith(`.${baseDomain}`)) return null
+
+  const suffix = `.${baseDomain}`
+  const subdomain = host.slice(0, -suffix.length).trim()
+
+  // Aceita apenas um label de subdomínio para evitar ambiguidades.
+  if (!subdomain || subdomain.includes('.')) return null
+
+  return subdomain
+}
+
 export function resolveTenantSlug(input: ResolveTenantInput = {}): string | null {
   const href = input.href ?? (typeof window !== 'undefined' ? window.location.href : '')
   const url = href ? new URL(href) : null
@@ -28,11 +45,8 @@ export function resolveTenantSlug(input: ResolveTenantInput = {}): string | null
 
   // Suporte para subdomínio (ex.: tenant1.app.com)
   if (hostname && !isLocalHost(hostname)) {
-    const hostParts = hostname.split('.')
-    if (hostParts.length >= 3) {
-      const subdomain = hostParts[0]?.trim()
-      if (subdomain) return subdomain
-    }
+    const bySubdomain = resolveTenantBySubdomain(hostname)
+    if (bySubdomain) return bySubdomain
   }
 
   return null
