@@ -4,6 +4,7 @@ import { authMiddleware, adminOnly, saasAdminOnly } from '../middlewares/auth.js
 import { validate } from '../middlewares/validate.js';
 import {
   loginSchema,
+  alunoSelfRegisterSchema,
   adminCreateAuthenticatedSchema,
   alunoCreateAuthenticatedSchema,
   saasAdminCreateAuthenticatedSchema,
@@ -47,6 +48,30 @@ const routes = new Router();
  *         description: Credenciais inválidas
  */
 routes.post('/login', validate(loginSchema), UsuarioController.login);
+
+/**
+ * @swagger
+ * /cadastro/aluno:
+ *   post:
+ *     summary: Auto-cadastro público de aluno (opcional inscrição em curso)
+ *     tags: [Usuários]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Aluno cadastrado (retorna usuario e token JWT)
+ *       400:
+ *         description: Dados inválidos ou tenant não encontrado
+ */
+routes.post(
+  '/cadastro/aluno',
+  validate(alunoSelfRegisterSchema),
+  UsuarioController.storeAlunoPublic,
+);
 
 // --- Rotas Protegidas (Precisa estar Logado) ---
 routes.use(authMiddleware);

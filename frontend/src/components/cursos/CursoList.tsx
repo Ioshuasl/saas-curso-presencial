@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react'
-import { CheckCircle2, Eye, Pencil, Trash2, UserRound, X, XCircle } from 'lucide-react'
+import { useMemo, useState, type MouseEvent } from 'react'
+import { CheckCircle2, Eye, Link2, Pencil, Trash2, UserRound, X, XCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 import type { Curso } from '../../types'
 import { inscricaoService } from '../../services/inscricaoService'
 import type { CursoComInscritos } from '../../types/inscricao'
-import { cn } from '../../utils'
+import { authService } from '../../services'
+import { cn, copyAlunoCadastroLink, resolveTenantSlugFromBrowser } from '../../utils'
 
 type CursoListProps = {
   cursos: Curso[]
@@ -29,6 +31,27 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
     () => cursoComInscritos?.alunos_inscritos ?? [],
     [cursoComInscritos?.alunos_inscritos],
   )
+
+  const activeTenantSlug =
+    authService.getSession()?.tenantSlug ?? resolveTenantSlugFromBrowser()
+
+  async function handleCopyCadastroLink(curso: Curso, event: MouseEvent<HTMLButtonElement>) {
+    event.stopPropagation()
+
+    if (!activeTenantSlug) {
+      toast.error('Tenant ativo não identificado. Faça login novamente.')
+      return
+    }
+
+    try {
+      await copyAlunoCadastroLink({ tenantSlug: activeTenantSlug, cursoId: curso.id })
+      toast.success('Link de auto-cadastro com inscrição copiado.')
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Não foi possível copiar o link de cadastro.'
+      toast.error(message)
+    }
+  }
 
   async function handleVisualizarInscricoes(curso: Curso) {
     setCursoSelecionado(curso)
@@ -141,6 +164,17 @@ export function CursoList({ cursos, isLoading, onEdit, onDelete, className }: Cu
               </div>
 
               <div className="flex items-center gap-1.5 self-end md:self-auto">
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    void handleCopyCadastroLink(curso, event)
+                  }}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-violet-50 hover:text-violet-600 dark:text-slate-500 dark:hover:bg-violet-900/30 dark:hover:text-violet-300"
+                  aria-label="Copiar link de auto-cadastro com inscrição"
+                  title="Copiar link de auto-cadastro com inscrição"
+                >
+                  <Link2 size={16} />
+                </button>
                 <button
                   type="button"
                   onClick={(event) => {

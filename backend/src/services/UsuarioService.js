@@ -1,7 +1,8 @@
-import { Usuario, PerfilAdministrador, PerfilAluno, Inscricao, QuestionarioInicial, FeedbackFinal, Curso, SessaoCurso, sequelize } from '../models/index.js';
+import { Usuario, PerfilAdministrador, PerfilAluno, Inscricao, QuestionarioInicial, FeedbackFinal, Curso, SessaoCurso, Tenant, sequelize } from '../models/index.js';
 import { gerarHash, compararHash, gerarToken } from '../utils/security.js';
 import { resolveTenantId, omitTenantContext } from '../utils/tenantContext.js';
 import { mergeTenantWhere, requireTenantId } from '../utils/tenantScope.js';
+import { formatUsuarioResponse } from '../utils/usuarioResponse.js';
 import { Op, literal } from 'sequelize';
 import InscricaoService from '../services/InscricaoService.js';
 
@@ -649,19 +650,88 @@ class UsuarioService {
     return { usuario, token };
   }
 
-  async getMe(id, tenantId) {
+  buildMeIncludes(userRole, tenantId) {
+    const tid = requireTenantId(tenantId);
+    const includes = [
+      {
+        model: Tenant,
+        attributes: ['id', 'nome', 'slug', 'ativo'],
+      },
+    ];
+
+    if (userRole === 'ALUNO') {
+      includes.push(
+        { model: PerfilAluno, as: 'perfil_aluno' },
+        {
+          model: Inscricao,
+          as: 'inscricoes',
+          where: { tenant_id: tid },
+          required: false,
+          include: [
+            {
+              model: Curso,
+              as: 'curso',
+              where: { tenant_id: tid },
+              required: false,
+              include: [
+                {
+                  model: SessaoCurso,
+                  as: 'sessoes',
+                  where: { tenant_id: tid },
+                  required: false,
+                },
+              ],
+            },
+            {
+              model: QuestionarioInicial,
+              as: 'questionario_inicial',
+              where: { tenant_id: tid },
+              required: false,
+            },
+            {
+              model: FeedbackFinal,
+              as: 'feedback_final',
+              where: { tenant_id: tid },
+              required: false,
+            },
+          ],
+        },
+      );
+      return includes;
+    }
+
+    includes.push({ model: PerfilAdministrador, as: 'perfil_admin' });
+    return includes;
+  }
+
+  async registerAlunoPublic(tenantCtx, dados, curso_id) {
+    const tenantId = await resolveTenantId(tenantCtx);
+    const created = curso_id
+      ? await this.createAlunoComInscricao(tenantId, dados, curso_id)
+      : await this.createAluno(tenantId, dados);
+
+    const usuario = await this.findAlunoById(created.id, tenantId);
+    if (!usuario) throw new Error('Erro ao concluir cadastro do aluno');
+
+    const token = gerarToken({
+      id: usuario.id,
+      role: usuario.role,
+      tenant_id: usuario.tenant_id,
+    });
+
+    return { usuario: formatUsuarioResponse(usuario), token };
+  }
+
+  async getMe(id, tenantId, userRole) {
     const tid = requireTenantId(tenantId);
     const usuario = await Usuario.findOne({
       where: mergeTenantWhere(tid, { id }),
       attributes: { exclude: ['senha_hash'] },
-      include: [
-        { model: PerfilAdministrador, as: 'perfil_admin' },
-        { model: PerfilAluno, as: 'perfil_aluno' },
-      ],
+      include: this.buildMeIncludes(userRole, tid),
     });
 
     if (!usuario) throw new Error('Usuário não encontrado');
-    return usuario;
+    return formatUsuarioResponse(usuario);
   }
 }
 

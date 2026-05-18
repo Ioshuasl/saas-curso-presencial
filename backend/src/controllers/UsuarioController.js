@@ -35,6 +35,20 @@ class UsuarioController {
     }
   }
 
+  async storeAlunoPublic(req, res) {
+    try {
+      const { curso_id, tenant_id, tenant_slug, ...dados } = req.body;
+      const { usuario, token } = await UsuarioService.registerAlunoPublic(
+        { tenant_id, tenant_slug },
+        dados,
+        curso_id,
+      );
+      return res.status(201).json({ usuario, token });
+    } catch (e) {
+      return res.status(400).json({ error: e.message });
+    }
+  }
+
   async indexAdmin(req, res) {
     try {
       const tenantId = await resolveTenantIdForAdminRequest(req);
@@ -149,7 +163,7 @@ class UsuarioController {
 
   async me(req, res) {
     try {
-      const user = await UsuarioService.getMe(req.userId, req.tenantId);
+      const user = await UsuarioService.getMe(req.userId, req.tenantId, req.userRole);
       return res.json(user);
     } catch (e) {
       return res.status(404).json({ error: e.message });

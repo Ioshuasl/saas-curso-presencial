@@ -10,6 +10,7 @@ import {
   AdminInscricaoPage,
   AdminUsersPage,
   AlunosPage,
+  CadastroAlunoPage,
   CatalogoPage,
   FeedbackPage,
   FinanceiroPage,
@@ -52,6 +53,7 @@ function App() {
   const tenantSearch = sessionTenantSlug
     ? `?tenant_slug=${encodeURIComponent(sessionTenantSlug)}`
     : ''
+  const isAlunoCadastroRoute = location.pathname === '/aluno-cadastro'
 
   const pageTitleByPath: Record<string, string> = {
     '/dashboard': 'Dashboard',
@@ -139,7 +141,7 @@ function App() {
     urlTenantSlug,
   ])
 
-  if (isCheckingSession) {
+  if (isCheckingSession && !isAlunoCadastroRoute) {
     return (
       <>
         {import.meta.env.DEV ? (
@@ -148,6 +150,29 @@ function App() {
         <main className="flex min-h-screen items-center justify-center bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
           Carregando...
         </main>
+      </>
+    )
+  }
+
+  if (isAlunoCadastroRoute) {
+    return (
+      <>
+        <Toaster position="top-right" richColors closeButton />
+        <CadastroAlunoPage
+          onCadastroSuccess={({ user, role }) => {
+            setCurrentUser(user)
+            setCurrentRole(role)
+            const slug =
+              user.tenant?.slug ??
+              resolveTenantSlugFromBrowser() ??
+              sessionTenantSlug ??
+              ''
+            navigate(
+              slug ? `/catalogo?tenant_slug=${encodeURIComponent(slug)}` : '/catalogo',
+              { replace: true },
+            )
+          }}
+        />
       </>
     )
   }

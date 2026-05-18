@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   tenantContextFields,
+  refineHasTenantContext,
 } from './TenantContextSchema.js';
 
 const cpfSchema = z
@@ -49,8 +50,7 @@ export const saasAdminCreateAuthenticatedSchema = z.object({
     .optional(),
 });
 
-export const alunoCreateAuthenticatedSchema = z.object({
-  ...usuarioBase,
+const alunoProfileFields = {
   nome_completo: z.string().min(5, 'Nome muito curto'),
   telefone: z.string().trim().min(1, 'Telefone é obrigatório'),
   cidade: z.string().optional(),
@@ -61,7 +61,21 @@ export const alunoCreateAuthenticatedSchema = z.object({
     .int('curso_id deve ser um número inteiro')
     .positive('curso_id deve ser maior que zero')
     .optional(),
+};
+
+export const alunoCreateAuthenticatedSchema = z.object({
+  ...usuarioBase,
+  ...alunoProfileFields,
 });
+
+/** Auto-cadastro público: exige tenant_id ou tenant_slug no body. */
+export const alunoSelfRegisterSchema = z
+  .object({
+    ...usuarioBase,
+    ...alunoProfileFields,
+    ...tenantContextFields,
+  })
+  .superRefine(refineHasTenantContext);
 
 export const updateAdminSchema = z.object({
   ...usuarioBase,

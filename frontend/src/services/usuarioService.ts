@@ -11,6 +11,8 @@ import type {
   CreateAdminRequest,
   CreateSaasAdminRequest,
   CreateAlunoRequest,
+  AlunoSelfRegisterRequest,
+  AlunoSelfRegisterResponse,
   LoginRequest,
   LoginResponse,
   UpdateAdminRequest,
@@ -23,6 +25,10 @@ import type {
 export const usuarioService = {
   login(payload: LoginRequest) {
     return api.post<LoginResponse>('/login', payload)
+  },
+
+  cadastrarAlunoPublico(payload: AlunoSelfRegisterRequest) {
+    return api.post<AlunoSelfRegisterResponse>('/cadastro/aluno', payload)
   },
 
   criarAdmin(payload: CreateAdminRequest) {

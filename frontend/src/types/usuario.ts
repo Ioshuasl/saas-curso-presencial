@@ -1,5 +1,12 @@
 export type UsuarioTipo = 'ADMIN' | 'ALUNO'
 
+export type TenantSummary = {
+  id: number
+  nome: string
+  slug: string
+  ativo: boolean
+}
+
 export type UsuarioBase = {
   id: number
   tenant_id?: number
@@ -26,6 +33,7 @@ export type UsuarioBase = {
     usuario_id: number
     nome_completo: string
   } | null
+  tenant?: TenantSummary | null
 }
 
 export type Admin = UsuarioBase & {
@@ -167,6 +175,27 @@ export type CreateAlunoRequest = {
   profissao?: string
   biografia?: string
   curso_id?: number
+}
+
+/** Auto-cadastro público: exige tenant_id ou tenant_slug no body. */
+export type AlunoSelfRegisterRequest = {
+  tenant_id?: number
+  tenant_slug?: string
+  username: string
+  email: string
+  senha: string
+  cpf?: string
+  nome_completo: string
+  telefone: string
+  cidade?: string
+  profissao?: string
+  biografia?: string
+  curso_id?: number
+}
+
+export type AlunoSelfRegisterResponse = {
+  token: string
+  usuario: AlunoDetalhe
 }
 
 export type UpdateAdminRequest = Partial<

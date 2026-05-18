@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { RefreshCcw, UserPlus } from 'lucide-react'
+import { Link2, RefreshCcw, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { AlunoUserForm, AlunoUsersFilters, AlunoUsersList } from '../components'
@@ -15,7 +15,7 @@ import type {
   UpdateAlunoRequest,
   UsuarioListQuery,
 } from '../types'
-import { resolveTenantSlugFromBrowser } from '../utils'
+import { copyAlunoCadastroLink, resolveTenantSlugFromBrowser } from '../utils'
 
 export function AlunosPage() {
   const [alunos, setAlunos] = useState<Aluno[]>([])
@@ -105,6 +105,22 @@ export function AlunosPage() {
     }
   }
 
+  async function handleCopyCadastroLink() {
+    if (!activeTenantSlug) {
+      toast.error('Tenant ativo não identificado. Faça login novamente.')
+      return
+    }
+
+    try {
+      await copyAlunoCadastroLink({ tenantSlug: activeTenantSlug })
+      toast.success('Link de auto-cadastro copiado.')
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Não foi possível copiar o link de cadastro.'
+      toast.error(message)
+    }
+  }
+
   async function handleDelete(aluno: Aluno) {
     const confirmed = window.confirm(
       `Deseja excluir o aluno "${aluno.perfil_aluno?.nome_completo || aluno.nome_completo || aluno.username}"?`,
@@ -152,6 +168,18 @@ export function AlunosPage() {
             >
               <RefreshCcw size={18} className={isLoading ? 'animate-spin' : ''} />
             </button>
+            <Button
+              type="button"
+              variant="outline"
+              startIcon={<Link2 size={18} />}
+              onClick={() => {
+                void handleCopyCadastroLink()
+              }}
+              className="rounded-2xl px-5 py-3 text-sm font-bold"
+              title="Copiar link de auto-cadastro (sem inscrição em curso)"
+            >
+              Copiar link de cadastro
+            </Button>
             <Button
               type="button"
               startIcon={isLoading ? <RefreshCcw size={18} className="animate-spin" /> : <UserPlus size={18} />}

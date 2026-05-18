@@ -1,9 +1,10 @@
-import { Briefcase, CalendarDays, MapPin, Plus, Save, Trash2, User as UserIcon, X } from 'lucide-react'
+import { Briefcase, CalendarDays, Link2, MapPin, Plus, Save, Trash2, User as UserIcon, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { CreateCursoRequest, CreateCursoSessaoRequest, Curso, UpdateCursoRequest } from '../../types'
-import { consultarCepViaReceitaWs } from '../../utils/cepReceitaWs'
+import { authService } from '../../services'
+import { copyAlunoCadastroLink, consultarCepViaReceitaWs, resolveTenantSlugFromBrowser } from '../../utils'
 import { Button } from '../ui/Button'
 import { DatePicker } from '../ui/DatePicker'
 import { ImagePicker } from '../ui/ImagePicker'
@@ -200,6 +201,30 @@ export function CursoForm({
       toast.error('Não foi possível consultar o CEP informado.')
     } finally {
       setIsCepLookupLoading(false)
+    }
+  }
+
+  const activeTenantSlug =
+    authService.getSession()?.tenantSlug ?? resolveTenantSlugFromBrowser()
+
+  async function handleCopyCadastroComInscricao() {
+    const cursoId = selectedCurso?.id
+    if (!cursoId) {
+      toast.error('Salve o curso antes de copiar o link de cadastro com inscrição.')
+      return
+    }
+    if (!activeTenantSlug) {
+      toast.error('Tenant ativo não identificado. Faça login novamente.')
+      return
+    }
+
+    try {
+      await copyAlunoCadastroLink({ tenantSlug: activeTenantSlug, cursoId })
+      toast.success('Link de auto-cadastro com inscrição copiado.')
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Não foi possível copiar o link de cadastro.'
+      toast.error(message)
     }
   }
 
@@ -470,7 +495,58 @@ export function CursoForm({
           </div>
         </div>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-slate-100 px-6 py-5 dark:border-slate-800 sm:flex-row sm:justify-end sm:px-8 md:px-10 md:py-6">
+        {/* Mobile: Cancelar + Salvar na mesma linha; link abaixo */}
+        <div className="flex flex-col gap-2 border-t border-slate-100 px-6 py-5 dark:border-slate-800 sm:hidden">
+          <div className="flex flex-row gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="min-w-0 flex-1 rounded-2xl border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              startIcon={<Save size={18} />}
+              className="min-w-0 flex-1 rounded-2xl px-4 py-3 text-sm font-medium uppercase tracking-wider shadow-xl shadow-indigo-200/40 dark:shadow-indigo-950/40"
+            >
+              {isEditing ? 'Salvar alterações' : 'Salvar curso'}
+            </Button>
+          </div>
+          {selectedCurso?.id ? (
+            <Button
+              type="button"
+              variant="outline"
+              startIcon={<Link2 size={18} />}
+              onClick={() => {
+                void handleCopyCadastroComInscricao()
+              }}
+              className="w-full rounded-2xl px-5 py-3 text-sm font-bold"
+              title="Copiar link de auto-cadastro com inscrição neste curso"
+            >
+              Copiar link de cadastro
+            </Button>
+          ) : null}
+        </div>
+
+        {/* Desktop: link à esquerda; Cancelar + Salvar à direita */}
+        <div className="hidden border-t border-slate-100 px-6 py-5 dark:border-slate-800 sm:flex sm:flex-row sm:items-center sm:justify-end sm:gap-2 sm:px-8 md:px-10 md:py-6">
+          {selectedCurso?.id ? (
+            <Button
+              type="button"
+              variant="outline"
+              startIcon={<Link2 size={18} />}
+              onClick={() => {
+                void handleCopyCadastroComInscricao()
+              }}
+              className="mr-auto rounded-2xl px-5 py-3 text-sm font-bold md:px-6 md:py-3.5"
+              title="Copiar link de auto-cadastro com inscrição neste curso"
+            >
+              Copiar link de cadastro
+            </Button>
+          ) : null}
           <Button
             type="button"
             variant="outline"

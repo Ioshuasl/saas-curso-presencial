@@ -73,8 +73,11 @@ export const cursoService = {
     return api.get<CursoListResponse>('/cursos', { params })
   },
 
-  buscarCursoPorId(id: number) {
-    return api.get<Curso>(`/cursos/${id}`)
+  buscarCursoPorId(
+    id: number,
+    params?: { tenant_slug?: string; tenant_id?: number },
+  ) {
+    return api.get<Curso>(`/cursos/${id}`, { params })
   },
 
   consultarVagas(id: number) {

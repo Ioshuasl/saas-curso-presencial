@@ -5,3 +5,8 @@ export { resolveTenantNavigationAction } from './tenantSessionFlow'
 export { consultarCepViaReceitaWs } from './cepReceitaWs'
 export { consultarCnpjViaBrasilApi } from './cnpjBrasilApi'
 export { phoneToWhatsAppDigits } from './whatsapp'
+export {
+  buildAlunoCadastroUrl,
+  copyAlunoCadastroLink,
+  type BuildAlunoCadastroUrlInput,
+} from './cadastroAlunoLink'
